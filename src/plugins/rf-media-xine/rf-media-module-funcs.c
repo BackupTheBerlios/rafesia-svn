@@ -159,7 +159,7 @@ event_init (void *ptr_media, void (*media_event_cb)(gint event)) {
 
 ModuleInfo *
 get_module_info () {
-	ModuleInfo *info = g_new0(ModuleInfo, 1);
+	ModuleInfo *info = g_new0 (ModuleInfo, 1);
 
 	rf_media_set_name (info, "Rafesia Media Module [XinE]");
 	rf_media_set_description (info, "Alpha phase xine plugin for rafesia 0.0.0");

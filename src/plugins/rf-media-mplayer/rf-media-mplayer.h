@@ -14,8 +14,13 @@ G_BEGIN_DECLS
 
 struct _RfMediaMplayer {
 
-	GtkWidget                  widget;
+	GtkWidget                   widget;
 	
+	GIOChannel                 *input;
+	gchar                      *input_file;
+	GIOChannel                 *output;
+	gchar                      *output_file;
+
 	gchar                      *file;
 	
 	gint                        mp_pid;

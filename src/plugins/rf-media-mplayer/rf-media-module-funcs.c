@@ -96,10 +96,13 @@ go (MediaModule *module, gint pos_stream, gint pos_time, gboolean actual) {
 gint 
 get_position (MediaModule *module, gint *pos_stream, gint *pos_time, gint *time) {
 	
-	/*RfMediaXine      *media = RF_MEDIA_XINE (module->widget);
+	RfMediaMplayer      *rmm = RF_MEDIA_MPLAYER (module->widget);
 	
-	return xine_get_pos_length (media->stream, pos_stream, pos_time, time);*/
+	*pos_stream = 100;
+	*pos_time = rmm->timer * 100;
+	*time = 65400;
 	
+	return TRUE;
 }
 
 gint
@@ -124,7 +127,7 @@ get_status (MediaModule *module) {
 	}
 	
 	return (-1);*/
-
+	return RF_STATUS_PLAY;
 }
 
 gint

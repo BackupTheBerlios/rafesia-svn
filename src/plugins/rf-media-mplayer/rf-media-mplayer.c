@@ -10,13 +10,15 @@
 
 static GtkWidgetClass *parent_class = NULL;
 
+gboolean rf_media_mplayer_timeout (gpointer data);
+
 gboolean
 rf_media_mplayer_is_running (GtkWidget *widget) {
 	
 	RfMediaMplayer  *rmm;
 	
 	g_return_if_fail (widget != NULL);
-	g_return_if_fail (IS_RF_MEDIA_MPLAYER(widget));
+	g_return_if_fail (IS_RF_MEDIA_MPLAYER (widget));
 
 	rmm = RF_MEDIA_MPLAYER (widget);
 	
@@ -83,7 +85,7 @@ rf_media_mplayer_stop (GtkWidget *widget) {
 	RfMediaMplayer  *rmm;
 	
 	g_return_if_fail (widget != NULL);
-	g_return_if_fail (IS_RF_MEDIA_MPLAYER(widget));
+	g_return_if_fail (IS_RF_MEDIA_MPLAYER (widget));
 
 	rmm = RF_MEDIA_MPLAYER (widget);
 	
@@ -100,10 +102,22 @@ rf_media_mplayer_restart (GtkWidget *widget) {
 	RfMediaMplayer  *rmm;
 	
 	g_return_if_fail (widget != NULL);
-	g_return_if_fail (IS_RF_MEDIA_MPLAYER(widget));
+	g_return_if_fail (IS_RF_MEDIA_MPLAYER (widget));
 
 	rmm = RF_MEDIA_MPLAYER (widget);
+
+	/*if (rmm->input_file == NULL)
+		rmm->input_file = g_strdup ("~/.rafesia_in");
+
+	if (rmm->input == NULL)
+		rmm->input = g_io_channel_new_file (rmm->input_file, "w", NULL);
 	
+	if (rmm->output_file == NULL)
+		rmm->output_file = g_strdup ("~/.rafesia_out");
+
+	if (rmm->output == NULL) 
+		rmm->output = g_io_channel_new_file (rmm->output_file, "r", NULL);*/
+
 	if (rf_media_mplayer_is_running (widget)) {
 		
 		rf_media_mplayer_stop (widget);
@@ -118,13 +132,16 @@ rf_media_mplayer_restart (GtkWidget *widget) {
 		if (rmm->timer)
 			rmm->timer = 0;
 
-		cmd = g_strdup_printf ("mplayer -vo xv -vop scale=%d:-3 -wid %d %s > /dev/null 2> /dev/null &", rmm->width, GDK_WINDOW_XWINDOW (widget->window),rmm->file);
+		//cmd = g_strdup_printf ("%s > mplayer -vo xv -slave -vop scale=%d:-3 -wid %d %s > %s 2> /dev/null &", rmm->input_file, rmm->width, GDK_WINDOW_XWINDOW (widget->window),rmm->file, rmm->output_file);
+		cmd = g_strdup_printf ("mplayer -vo xv -slave -vop scale=%d:-3 -wid %d %s > %s 2> /dev/null &", rmm->width, GDK_WINDOW_XWINDOW (widget->window),rmm->file, rmm->output_file);
 		rmm->ready = FALSE;
 		rmm->timer = 0;
+		g_timeout_add (100, rf_media_mplayer_timeout, rmm);
 		rf_media_mplayer_launch (widget, cmd);
 		g_free (cmd);
 		
 	}
+
 }
 
 void
@@ -132,16 +149,65 @@ rf_media_mplayer_play (GtkWidget *widget, gchar *file) {
 	
 	gchar          *cmd;
 	gint            pid;
-	
+	GError         *error;
+
+	g_return_if_fail (widget != NULL);
+	g_return_if_fail (IS_RF_MEDIA_MPLAYER (widget));
+
 	RfMediaMplayer *rmm = RF_MEDIA_MPLAYER (widget);
 	
-	cmd = g_strdup_printf ("mplayer -vo xv -vop scale=%d:-3 -wid %d %s > /dev/null 2> /dev/null &", rmm->width, GDK_WINDOW_XWINDOW (widget->window), file);
-	pid = rf_media_mplayer_launch (GTK_WIDGET (widget), cmd);
+	/*if (rmm->input_file == NULL)
+		rmm->input_file = g_strdup ("~/.rafesia_in");
+
+	if (rmm->input == NULL) {
+		rmm->input = g_io_channel_new_file (rmm->input_file, "rwa", &error);
+		g_io_channel_flush (rmm->input, NULL);
+	}
+	
+	if (rmm->output_file == NULL)
+		rmm->output_file = g_strdup ("~/.rafesia_out");
+
+	if (rmm->output == NULL)  {
+		rmm->output = g_io_channel_new_file (rmm->output_file, "rwa", NULL);
+		g_io_channel_flush (rmm->output, NULL);
+	}*/
+	
 	rmm->file = g_strdup (file);
+	//cmd = g_strdup_printf ("%s > mplayer -vo xv -slave -vop scale=%d:-3 -wid %d %s > %s 2> /dev/null &", rmm->input_file, rmm->width, GDK_WINDOW_XWINDOW (widget->window),rmm->file, rmm->output_file);
+	cmd = g_strdup_printf ("mplayer -vo xv -slave -vop scale=%d:-3 -wid %d %s > %s 2> /dev/null &", rmm->width, GDK_WINDOW_XWINDOW (widget->window),rmm->file, rmm->output_file);
+	pid = rf_media_mplayer_launch (GTK_WIDGET (widget), cmd);
 	rmm->timer = 0;
 	rmm->ready = FALSE;
+	g_timeout_add (100, rf_media_mplayer_timeout, rmm);
 	g_free (cmd);
 	
+}
+
+gboolean
+rf_media_mplayer_timeout (gpointer data) {
+	
+	RfMediaMplayer  *rmm;
+	gchar           *path;
+	FILE            *fp;
+	
+	g_return_if_fail (data != NULL);
+	g_return_if_fail (IS_RF_MEDIA_MPLAYER (data));
+
+	rmm = RF_MEDIA_MPLAYER (data);
+	
+	path = g_strdup_printf("/proc/%d", rmm->mp_pid);
+	
+	fp = (FILE *) g_fopen (path, "r");
+	if (fp == NULL) {
+		rf_media_mplayer_restart (GTK_WIDGET (rmm));
+		return FALSE;
+	} else
+		fclose (fp);
+	
+	g_free (path);
+	rmm->timer++;
+	
+	return TRUE;
 }
 
 static void
@@ -150,7 +216,7 @@ rf_media_mplayer_size_allocate (GtkWidget *widget, GtkAllocation *allocation) {
 	RfMediaMplayer *rmm;
 	
 	g_return_if_fail (widget != NULL);
-	g_return_if_fail (IS_RF_MEDIA_MPLAYER(widget));
+	g_return_if_fail (IS_RF_MEDIA_MPLAYER (widget));
 	
 	rmm = RF_MEDIA_MPLAYER (widget);
 	
@@ -168,14 +234,6 @@ rf_media_mplayer_size_allocate (GtkWidget *widget, GtkAllocation *allocation) {
 	
 	widget->allocation = *allocation;
 
-	/*
-	this->width = allocation->x;
-	this->height = allocation->y;
-	g_printf ("alloc> x: %d  y: %d\n", this->width, this->height);
-
-	if (GTK_WIDGET_REALIZED (widget))
-		gdk_window_move_resize (widget->window, allocation->x, allocation->y, allocation->width, allocation->height);
-	*/
 }
 
 static gboolean
@@ -202,12 +260,10 @@ static void
 rf_media_mplayer_realize (GtkWidget *widget) {
 	
 	RfMediaMplayer      *this;
-	GtkStyle            *style = gtk_style_new ();
-	GdkColor             color;
 	GdkWindowAttr        attributes;
 	
 	g_return_if_fail (widget != NULL);
-	g_return_if_fail (IS_RF_MEDIA_MPLAYER(widget));
+	g_return_if_fail (IS_RF_MEDIA_MPLAYER (widget));
 
 	this = RF_MEDIA_MPLAYER (widget);
 
@@ -219,17 +275,16 @@ rf_media_mplayer_realize (GtkWidget *widget) {
 	attributes.wclass            = GDK_INPUT_OUTPUT;
 	attributes.visual            = gtk_widget_get_default_visual ();
 	attributes.colormap          = gtk_widget_get_default_colormap ();
-	attributes.event_mask        = GDK_ALL_EVENTS_MASK; //gtk_widget_get_events (widget) | GDK_EXPOSURE_MASK | GDK_POINTER_MOTION_MASK | GDK_KEY_PRESS_MASK;
+	attributes.event_mask        = GDK_ALL_EVENTS_MASK;
 	widget->window               = gdk_window_new (widget->parent->window, &attributes, GDK_WA_X | GDK_WA_Y | GDK_WA_VISUAL | GDK_WA_COLORMAP);
 	this->mp_pid                 = -1;
 	
-	color.red = 0;
-	color.green = 0;
-	color.blue = 0;
-	style->fg[0] = color;
-	style->bg[0] = color;
+	this->input                  = NULL;
+	this->input_file             = g_strdup ("~/.rafesia_in");
+	this->output                 = NULL;
+	this->output_file            = g_strdup ("~/.rafesia_out");
+	
 	gdk_window_set_user_data (widget->window, widget);
-	gtk_style_set_background (style, widget->window, GTK_STATE_ACTIVE);
 
 	GTK_WIDGET_SET_FLAGS (widget, GTK_REALIZED);
 }
