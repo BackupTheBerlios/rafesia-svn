@@ -304,56 +304,55 @@ get_mediamodule (void) {
 }
 
 gboolean
-media_event (GtkWidget *widget, GdkEvent *event, gpointer user_data) {
+rf_media_widget_motion_event (GtkWidget *widget, GdkEventMotion *event, gpointer user_data) {
+	
+	gint x, y, mask;
+	GdkModifierType mods;
 
-	switch (event->type) {
-		case (GDK_SCROLL): {
-			switch (event->scroll.direction) {
-				case (GDK_SCROLL_UP): rf_media_go_forward (NULL, get_mediamodule ()); break;
-				case (GDK_SCROLL_DOWN): rf_media_go_backward (NULL, get_mediamodule ()); break;
+	g_return_val_if_fail (widget != NULL, FALSE);
+	g_return_val_if_fail (event != NULL, FALSE);
+	
+	if (fullscreen) {
+		GtkWidget *box       = rf_widget_get ("rf box bottom");
+		GtkWidget *box_label = rf_widget_get ("rf box label");
+		
+		x = event->x;
+		y = event->y;
+		
+		if ( box != NULL || box_label != NULL) {
+			gint wy = gdk_screen_height () - box->allocation.height - box_label->allocation.height;
+			
+			if (GTK_WIDGET_VISIBLE (box)) {
+				if (wy > y) {
+					gtk_widget_hide (box);
+					gtk_widget_hide (box_label);
+				}
+			} else {
+				if (wy < y) {
+					gtk_widget_show (box);
+					gtk_widget_show (box_label);
+				}
 			}
 		}
-		case (GDK_MOTION_NOTIFY): {
-			
-			g_printf ("GDK_MOTION_NOTIFY x: %f y: %f [xroot: %f, yroot: %f]\n", event->motion.x, event->motion.y, event->motion.x_root, event->motion.y_root);
-			break;
-
-		}
 		
-		case (GDK_NOTHING): g_printf ("GDK_NOTHING\n"); break;
-		case (GDK_DELETE): g_printf ("GDK_DELETE\n"); break;
-		case (GDK_DESTROY): g_printf ("GDK_DESTROY\n"); break;
-		case (GDK_EXPOSE): g_printf ("GDK_EXPOSE\n"); break;
-		case (GDK_BUTTON_PRESS): g_printf ("GDK_BUTTON_PRESS\n"); break;
-		case (GDK_2BUTTON_PRESS): g_printf ("GDK_2BUTTON_PRESS\n"); break;
-		case (GDK_3BUTTON_PRESS): g_printf ("GDK_3BUTTON_PRESS\n"); break;
-		case (GDK_BUTTON_RELEASE): g_printf ("GDK_BUTTON_RELEASE\n"); break;
-		case (GDK_KEY_PRESS): g_printf ("GDK_KEY_PRESS\n"); break;
-		case (GDK_KEY_RELEASE): g_printf ("GDK_KEY_RELEASE\n"); break;
-		case (GDK_ENTER_NOTIFY): g_printf ("GDK_ENTER_NOTIFY\n"); break;
-		case (GDK_LEAVE_NOTIFY): g_printf ("GDK_LEAVE_NOTIFY\n"); break;
-		case (GDK_FOCUS_CHANGE): g_printf ("GDK_FOCUS_CHANGE\n"); break;
-		case (GDK_CONFIGURE): g_printf ("GDK_CONFIGURE\n"); break;
-		case (GDK_MAP): g_printf ("GDK_MAP\n"); break;
-		case (GDK_UNMAP): g_printf ("GDK_UNMAP\n"); break;
-		case (GDK_PROPERTY_NOTIFY): g_printf ("GDK_PROPERTY_NOTIFY\n"); break;
-		case (GDK_SELECTION_CLEAR): g_printf ("GDK_SELECTION_CLEAR\n"); break;
-		case (GDK_SELECTION_REQUEST): g_printf ("GDK_SELECTION_REQUEST\n"); break;
-		case (GDK_SELECTION_NOTIFY): g_printf ("GDK_SELECTION_NOTIFY\n"); break;
-		case (GDK_PROXIMITY_IN): g_printf ("GDK_PROXIMITY_IN\n"); break;
-		case (GDK_PROXIMITY_OUT): g_printf ("GDK_PROXIMITY_OUT\n"); break;
-		case (GDK_DRAG_MOTION): g_printf ("GDK_DRAG_MOTION\n"); break;
-		case (GDK_DRAG_LEAVE): g_printf ("GDK_DRAG_LEAVE\n"); break;
-		case (GDK_DRAG_STATUS): g_printf ("GDK_DRAG_STATUS\n"); break;
-		case (GDK_DROP_START): g_printf ("GDK_DROP_START\n"); break;
-		case (GDK_DROP_FINISHED): g_printf ("GDK_DROP_FINISHED\n"); break;
-		case (GDK_CLIENT_EVENT): g_printf ("GDK_CLIENT_EVENT\n"); break;
-		case (GDK_VISIBILITY_NOTIFY): g_printf ("GDK_VISIBILITY_NOTIFY\n"); break;
-		case (GDK_NO_EXPOSE): g_printf ("GDK_NO_EXPOSE\n"); break;
-		case (GDK_WINDOW_STATE): g_printf ("GDK_WINDOW_STATE\n"); break;
-		case (GDK_SETTING): g_printf ("GDK_SETTING\n"); break;
-		
+		if (event->is_hint || (event->window != widget->window))
+			gdk_window_get_pointer (widget->window, &x, &y, &mods);
+	
 	}
+	
+	return (TRUE);	
+
+}
+
+gboolean
+rf_media_widget_key_press_event (GtkWidget *widget, GdkEventKey *event, gpointer user_data) {
+	
+	GdkEvent eventk;
+	g_printf ("aaa\n");
+	eventk.type = GDK_KEY_PRESS;
+	eventk.key = *event;
+	
+	gtk_widget_event (GTK_WIDGET (user_data), &eventk);
 	
 }
 
@@ -491,23 +490,15 @@ rf_interface_main_window_create (MediaModule *mmod) {
 	gtk_widget_show (menuFilm_fullscreen);
 	gtk_container_add (GTK_CONTAINER (menu_film), menuFilm_fullscreen);
 	
-	
-	eventbox_media = gtk_event_box_new ();
-	gtk_container_add (GTK_CONTAINER (vbox1), eventbox_media);
-	gtk_widget_show (eventbox_media);
-	
 	if ( mmod->widget != NULL) {
 	
-		gtk_container_add (GTK_CONTAINER (eventbox_media), mmod->widget);
+		gtk_container_add (GTK_CONTAINER (vbox1), mmod->widget);
 		rf_widget_add (mmod->widget, "rf media widget");
-		
+		g_signal_connect (G_OBJECT (mmod->widget), "motion-notify-event", G_CALLBACK (rf_media_widget_motion_event), NULL);
+		g_signal_connect (G_OBJECT (mmod->widget), "key-press-event", G_CALLBACK (rf_media_widget_key_press_event), window);	
+	
 	}
 
-	gtk_widget_set_events (eventbox_media, GDK_ALL_EVENTS_MASK);
-	g_signal_connect (G_OBJECT (eventbox_media), "event", G_CALLBACK (media_event), NULL );
-	gtk_widget_realize (eventbox_media);
-	
-	
 	hbox1 = gtk_hbox_new (FALSE, 5);
 	gtk_widget_show (hbox1);
 	gtk_box_pack_start (GTK_BOX (vbox1), hbox1, FALSE, FALSE, 0);
@@ -636,7 +627,7 @@ rf_interface_main_window_create (MediaModule *mmod) {
 
 	mediamod = mmod;
 	g_timeout_add (1000, update_slider_cb, seekerTime);
-	
+
 	return (window);
 
 }

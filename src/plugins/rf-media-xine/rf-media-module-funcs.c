@@ -25,21 +25,21 @@
 gint
 open(MediaModule *module, gchar *mrl) {
 
-	RfMediaXine     *media = RF_MEDIA_XINE(module->widget);
+	RfMediaXine     *media = RF_MEDIA_XINE (module->widget);
 	
-	return xine_open(media->stream, mrl);
+	return xine_open (media->stream, mrl);
 
 }
 
 gint 
 play (MediaModule *module) {
 	
-	RfMediaXine     *media = RF_MEDIA_XINE(module->widget);
+	RfMediaXine     *media = RF_MEDIA_XINE (module->widget);
 	gint             ps=0;
 	
-	xine_get_pos_length(media->stream, &ps, NULL, NULL);
-	xine_play(media->stream, ps, 0);
-	xine_set_param(media->stream, XINE_PARAM_SPEED, XINE_SPEED_NORMAL);
+	xine_get_pos_length (media->stream, &ps, NULL, NULL);
+	xine_play (media->stream, ps, 0);
+	xine_set_param (media->stream, XINE_PARAM_SPEED, XINE_SPEED_NORMAL);
 	
 	return (0);
 	
@@ -48,9 +48,9 @@ play (MediaModule *module) {
 gint 
 stop (MediaModule *module) {
 	
-	RfMediaXine     *media = RF_MEDIA_XINE(module->widget);
+	RfMediaXine     *media = RF_MEDIA_XINE (module->widget);
 
-	xine_stop(media->stream);
+	xine_stop (media->stream);
 
 	return 0;
 	
@@ -59,9 +59,9 @@ stop (MediaModule *module) {
 gint
 rf_media_pause (MediaModule *module) {
 	
-	RfMediaXine     *media = RF_MEDIA_XINE(module->widget);
+	RfMediaXine     *media = RF_MEDIA_XINE (module->widget);
 
-	xine_set_param(media->stream, XINE_PARAM_SPEED, XINE_SPEED_PAUSE);
+	xine_set_param (media->stream, XINE_PARAM_SPEED, XINE_SPEED_PAUSE);
 
 	return 0;
 	
@@ -70,22 +70,22 @@ rf_media_pause (MediaModule *module) {
 gint
 go (MediaModule *module, gint pos_stream, gint pos_time, gboolean actual) {
 	
-	RfMediaXine        *media = RF_MEDIA_XINE(module->widget);
-	gint                ps=0, pt=0;
+	RfMediaXine        *media = RF_MEDIA_XINE (module->widget);
+	gint                ps = 0, pt = 0;
 	
 	switch (actual) {
 		case 0:
-			xine_play(media->stream, pos_stream, pos_time);
-			xine_set_param(media->stream, XINE_PARAM_SPEED, XINE_SPEED_NORMAL);
-			xine_set_param(media->stream, XINE_PARAM_SPEED, XINE_SPEED_NORMAL);
+			xine_play (media->stream, pos_stream, pos_time);
+			xine_set_param (media->stream, XINE_PARAM_SPEED, XINE_SPEED_NORMAL);
+			xine_set_param (media->stream, XINE_PARAM_SPEED, XINE_SPEED_NORMAL);
 			break;
 		case 1:
-			xine_get_pos_length(media->stream, &ps, &pt, NULL);
+			xine_get_pos_length (media->stream, &ps, &pt, NULL);
 			if (pos_stream == 0)
-				xine_play(media->stream, 0, pt+pos_time);
+				xine_play (media->stream, 0, pt+pos_time);
 			else
-				xine_play(media->stream, ps+pos_stream, 0);
-				xine_set_param(media->stream, XINE_PARAM_SPEED, XINE_SPEED_NORMAL);
+				xine_play (media->stream, ps+pos_stream, 0);
+				xine_set_param (media->stream, XINE_PARAM_SPEED, XINE_SPEED_NORMAL);
 			break;
 	}
 	
@@ -96,9 +96,9 @@ go (MediaModule *module, gint pos_stream, gint pos_time, gboolean actual) {
 gint 
 get_position (MediaModule *module, gint *pos_stream, gint *pos_time, gint *time) {
 	
-	RfMediaXine      *media = RF_MEDIA_XINE(module->widget);
+	RfMediaXine      *media = RF_MEDIA_XINE (module->widget);
 	
-	return xine_get_pos_length(media->stream, pos_stream, pos_time, time);
+	return xine_get_pos_length (media->stream, pos_stream, pos_time, time);
 	
 }
 
@@ -107,13 +107,13 @@ get_status (MediaModule *module) {
 
 	RfMediaXine     *media = RF_MEDIA_XINE(module->widget);
 
-	switch ( xine_get_status(media->stream) ) {
+	switch ( xine_get_status (media->stream) ) {
 		case XINE_STATUS_IDLE:
 			return RF_STATUS_EMPTY;
 		case XINE_STATUS_STOP:
 			return RF_STATUS_STOP;
 		case XINE_STATUS_PLAY:
-			switch (xine_get_param(media->stream, XINE_PARAM_SPEED)) {
+			switch (xine_get_param (media->stream, XINE_PARAM_SPEED)) {
 				case XINE_SPEED_PAUSE:
 					return RF_STATUS_PAUSE;
 				case XINE_SPEED_NORMAL:
@@ -130,18 +130,18 @@ get_status (MediaModule *module) {
 void
 xine_event_cb (void *user_data, const xine_event_t *event) {
 
-	void     (*media_event_cb)(gint event);
+	void     (*media_event_cb) (gint event);
 
 	media_event_cb = user_data;
 
 	switch (event->type) {
 		case XINE_EVENT_UI_PLAYBACK_FINISHED:
-			media_event_cb(RF_EVENT_PLAYBACK_FINISHED);
+			media_event_cb (RF_EVENT_PLAYBACK_FINISHED);
 			break;
 		case XINE_EVENT_DROPPED_FRAMES:
 			break;
 		default:
-			media_event_cb(event->type);
+			media_event_cb (event->type);
 	}
 
 }
@@ -165,10 +165,10 @@ get_module_info () {
 	rf_media_set_description (info, "Alpha phase xine plugin for rafesia 0.0.0");
 	
 	/* potem mozna to dokonczyc, nie jest to sprawa pierwszorzedna */
-	info->type=RF_MODULE_MEDIA;
+	info->type = RF_MODULE_MEDIA;
 
-	info->author=g_strdup("Lukasz 'pax' Zukowski");
-	info->required_version=g_strdup("=0.0.0");
+	info->author = g_strdup ("Lukasz 'pax' Zukowski");
+	info->required_version = g_strdup ("=0.0.0");
 
 	return info;
 }

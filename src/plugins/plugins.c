@@ -130,8 +130,8 @@ rf_module_media_load_from_file (gchar *filename) {
 void 
 rf_add_plugins_to_list (GSList *plugins, GtkWidget *treeview) {
 
-	GtkTreeIter iter;
-	GtkTreeStore *list_model = GTK_TREE_STORE (gtk_tree_view_get_model (GTK_TREE_VIEW (treeview)));
+	GtkTreeIter       iter;
+	GtkTreeStore     *list_model = GTK_TREE_STORE (gtk_tree_view_get_model (GTK_TREE_VIEW (treeview)));
 	
 	for ( ; plugins != NULL; plugins=g_slist_next (plugins) ) {
 		ModuleInfo    *info = (ModuleInfo *) plugins->data;

@@ -16,9 +16,7 @@ G_BEGIN_DECLS
 struct _RfMediaXine {
 
 	GtkWidget                   widget;
-
 	GdkWindow                  *video_window;
-	GdkWindowAttr               attributes;
 
 	xine_t                     *xine;
 	xine_stream_t              *stream;

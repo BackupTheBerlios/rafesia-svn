@@ -3,7 +3,7 @@ CC=gcc -g
 
 all:
 	@$(MAKE) plugins
-#	@cd xine && $(MAKE)
+	@cd xine && $(MAKE)
 	@cd rf-media-xine && $(MAKE)
 
 plugins:
@@ -13,5 +13,5 @@ plugins:
 clean:
 	@echo " RM   plugins.o"
 	@rm -rf plugins.o
-#	@cd xine && $(MAKE) clean
+	@cd xine && $(MAKE) clean
 	@cd rf-media-xine && $(MAKE) clean
