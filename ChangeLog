@@ -1,9 +1,34 @@
+2004-12-12 11:10  Piotr Tarasewicz  <ptw@hurd.pl>
+
+	* src/ui/rf-window-main.c: Added mnemonics, and changed labels for
+	  things in menu bar, old ones were weird.
+
+2004-12-12 10:59  Piotr Tarasewicz  <ptw@hurd.pl>
+
+	* src/ui/rf-window-about.c, src/ui/rf-window-main.c: Implemented new
+	  aboutbox with project name, version number and list of authors.
+	  Also, use manually created menu item instead of gtk-about from
+	  stock.
+
+2004-12-12 10:49  Łukasz Żukowski  <pax@legar.pl>
+
+	* src/plugins/plugins.c, src/plugins/plugins.h,
+	  src/plugins/rf-media-xine/rf-media-module-funcs.c,
+	  src/plugins/rf-media-xine/rf-media-xine.c,
+	  src/plugins/rf-media-xine/rf-media-xine.h,
+	  src/plugins/xine/xine_media_module.c, src/ui/rf-window-main.c:
+	  First implementation of fullscreen.
+
+2004-12-10 15:49  Piotr Tarasewicz  <ptw@hurd.pl>
+
+	* ChangeLog: Added new file.
+
 2004-12-09 22:59  Piotr Tarasewicz  <ptw@hurd.pl>
 
 	* src/Makefile, src/rafesia.c, src/ui/Makefile,
 	  src/ui/rf-window-about.c: Dropped Gnome support.
 
-2004-12-09 21:14  Lukasz Zukowski  <pax@legar.pl>
+2004-12-09 21:14  Łukasz Żukowski  <pax@legar.pl>
 
 	* Makefile, TODO, images, images/fov.png, images/next.png,
 	  images/pause.png, images/play.png, images/previous.png,
@@ -21,3 +46,4 @@
 	  src/ui/rf-widget-mixer.c, src/ui/rf-widget-mixer.h,
 	  src/ui/rf-window-about.c, src/ui/rf-window-main.c,
 	  src/ui/rf-window-main.h: Commited all available files
+
