@@ -16,13 +16,10 @@ struct _RfMediaMplayer {
 
 	GtkWidget                   widget;
 	
-	GIOChannel                 *input;
-	gchar                      *input_file;
-	GIOChannel                 *output;
-	gchar                      *output_file;
-
 	gchar                      *file;
 	
+	gint                        pipe_input[2];
+	gint                        pipe_output[2];
 	gint                        mp_pid;
 	guint32                     xid;
 
