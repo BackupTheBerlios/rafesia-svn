@@ -19,5 +19,9 @@
 
 #define VERSION "0.0.1"
 
+GtkWidget *rf_widget_get (gchar *name);
+gboolean   rf_widget_add (GtkWidget *widget, gchar *name);
+gboolean   rf_widget_remove (gchar *name);
+
 void rf_set_module_media (void *mmod);
 void rafesia_quit();

@@ -13,6 +13,23 @@ static gint
 rf_media_xine_expose (GtkWidget *widget, GdkEventExpose *event, gpointer user_data) {
 	
 	RfMediaXine       *rmx = (RfMediaXine *) user_data;
+
+	/*{
+		GdkRectangle *rect;        
+		int i, n;
+		int x,y,w,h;
+
+		printf( "expose bounding box: x = %d, y = %d, w = %d, h = %d\n",
+			event->area.x, event->area.y,
+			event->area.width, event->area.height );
+
+		gdk_region_get_rectangles( event->region, &rect, &n );
+
+		for( i = 0; i < n; i++ )
+			printf( "expose %d: x = %d, y = %d, w = %d, h = %d\n", i,rect[i].x, rect[i].y, rect[i].width, rect[i].height );
+
+		g_free( rect );
+	}*/
 	
 	xine_gui_send_vo_data (rmx->stream, XINE_GUI_SEND_EXPOSE_EVENT, event);
 	
@@ -111,7 +128,7 @@ rf_media_xine_realize (GtkWidget *widget) {
 	this->stream = xine_stream_new(this->xine, this->ao_port, this->vo_port);
 	
 	this->fullscreen = FALSE;
-	
+
 	g_signal_connect_after (G_OBJECT (gtk_widget_get_toplevel (widget)), "expose-event", G_CALLBACK (rf_media_xine_expose), this);
 	GTK_WIDGET_SET_FLAGS (widget, GTK_REALIZED);
 
@@ -149,7 +166,7 @@ rf_media_xine_finalize (GObject *object) {
 	RfMediaXine *rmx = (RfMediaXine *) object;
 
 	G_OBJECT_CLASS (parent_class)->finalize (object);
-	rmx = NULL;
+	//rmx = NULL;
 	
 }
 
@@ -170,7 +187,7 @@ rf_media_xine_class_init (gpointer class, gpointer class_data) {
 	//widget_class->size_request             = rf_media_xine_size_request;
 	widget_class->size_allocate            = rf_media_xine_size_allocate;
 	widget_class->expose_event             = (void *)rf_media_xine_expose;
-	//widget_class->motion_notify_event      = rf_media_xine_widget_motion_notify;
+	//widget_class->motion_notify_event      = rf_media_xine_motion_notify_cb;
 	//widget_class->button_press_event       = rf_media_xine_widget_button_press;
 
 	/* GObject */
@@ -179,7 +196,7 @@ rf_media_xine_class_init (gpointer class, gpointer class_data) {
 	object_class->finalize                 = rf_media_xine_finalize;
 
 	/* Properties */
-	/*g_object_class_install_property (object_class, PROP_LOGO_MODE,
+		/*g_object_class_install_property (object_class, PROP_LOGO_MODE,
 			g_param_spec_boolean ("logo_mode", NULL, NULL,
 				FALSE, G_PARAM_READWRITE));*/
 
@@ -225,6 +242,7 @@ rf_media_xine_new (void) {
 	
 	GtkWidget *widget = GTK_WIDGET (g_object_new (rf_media_xine_get_type (), NULL));
 
+	g_object_set (widget, "events", GDK_ALL_EVENTS_MASK, NULL);
 	g_signal_connect (GTK_OBJECT (widget), "expose-event", G_CALLBACK (rf_media_xine_expose),NULL);
 	
 	return widget;

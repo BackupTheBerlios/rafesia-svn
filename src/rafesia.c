@@ -25,6 +25,55 @@
 
 GMainLoop         *mainloop;
 MediaModule       *mediamod;
+GSList            *widgets_list=NULL;
+
+GtkWidget *
+rf_widget_get (gchar *name) {
+
+	GSList *lista = widgets_list;
+
+	while (lista != NULL) {
+		gchar *wname;
+		
+		wname = g_object_get_data (G_OBJECT(lista->data), "rf_widget_name");
+		
+		if ( g_ascii_strcasecmp (name, wname) == 0 )
+			return GTK_WIDGET(lista->data);
+
+		lista = g_slist_next (lista);
+	
+	}
+
+	return NULL;
+
+}
+
+gboolean
+rf_widget_remove (gchar *name) {
+	
+	GtkWidget *widget = rf_widget_get (name);
+
+	if ( widget == NULL) 
+		return FALSE;
+		
+	widgets_list = g_slist_remove (widgets_list, widget);
+	
+	return TRUE;
+	
+}
+
+gboolean
+rf_widget_add (GtkWidget *widget, gchar *name) {
+
+	if ( rf_widget_get (name) != NULL )
+		return FALSE;
+	
+	g_object_set_data ( G_OBJECT (widget), "rf_widget_name", name );
+	widgets_list = g_slist_append (widgets_list, widget);
+	
+	return TRUE;
+	
+}
 
 void
 scr_init (void) {

@@ -55,6 +55,7 @@ void
 rf_media_open_mrl (gchar *mrl, MediaModule *mmod) {
 
 	int i=0;
+
 	mmod->open_mrl (mmod, mrl);
 	mmod->play (mmod);
 	gtk_image_set_from_file (GTK_IMAGE (imagePlay), g_build_filename ("./images/", "pause.png", NULL));
@@ -166,11 +167,44 @@ gboolean
 rf_fullscreen (GtkWidget *widget, MediaModule *mmod) { 
 	
 	if (fullscreen) {
+	
+		GtkWidget *widget;
+		
+		widget = rf_widget_get ("rf menubar top");
+		if ( widget != NULL)
+			gtk_widget_show (widget);
+		
+		widget = rf_widget_get ("rf box label");
+		if ( widget != NULL )
+			gtk_widget_show (widget);
+		
+		widget = rf_widget_get ("rf box bottom");
+		if ( widget != NULL )
+			gtk_widget_show (widget);
+		
 		gtk_window_unfullscreen (GTK_WINDOW (window) );
 		fullscreen = FALSE;
+		
 	} else {
+	
+		GtkWidget *widget;
+		
+/*
+		widget = rf_widget_get ("rf menubar top");
+		if ( widget != NULL )
+			gtk_widget_hide (widget);
+ */
+		widget = rf_widget_get ("rf box label");
+		if ( widget != NULL )
+			gtk_widget_hide (widget);
+		
+		widget = rf_widget_get ("rf box bottom");
+		if ( widget != NULL )
+			gtk_widget_hide (widget);
+		
 		gtk_window_fullscreen ( GTK_WINDOW (window) );
 		fullscreen = TRUE;
+		
 	}
 	
 	return fullscreen;
@@ -291,6 +325,7 @@ rf_interface_main_window_create (MediaModule *mmod) {
 	
 	window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_title (GTK_WINDOW (window), ("Rafesia Movie Player"));
+	rf_widget_add (window, "rafesia main window");
 
 	vbox1 = gtk_vbox_new (FALSE, 0);
 	gtk_widget_show (vbox1);
@@ -299,7 +334,8 @@ rf_interface_main_window_create (MediaModule *mmod) {
 	menubar = gtk_menu_bar_new ();
 	gtk_widget_show (menubar);
 	gtk_box_pack_start (GTK_BOX (vbox1), menubar, FALSE, FALSE, 0);
-
+	rf_widget_add (menubar, "rf menubar top");
+	
 	menuitem_rafesia = gtk_menu_item_new_with_mnemonic ("_File");
 	gtk_widget_show (menuitem_rafesia);
 	gtk_container_add (GTK_CONTAINER (menubar), menuitem_rafesia);
@@ -351,12 +387,13 @@ rf_interface_main_window_create (MediaModule *mmod) {
 	
 	if ( mmod->widget != NULL)
 		gtk_container_add (GTK_CONTAINER (vbox1), mmod->widget);
-
+	
 	hbox1 = gtk_hbox_new (FALSE, 5);
 	gtk_widget_show (hbox1);
 	gtk_box_pack_start (GTK_BOX (vbox1), hbox1, FALSE, FALSE, 0);
 	gtk_container_set_border_width (GTK_CONTAINER (hbox1), 5);
-
+	rf_widget_add (hbox1, "rf box label");
+	
 	labelPlaying = gtk_label_new ("");
 	gtk_widget_show (labelPlaying);
 	gtk_box_pack_start (GTK_BOX (hbox1), labelPlaying, FALSE, FALSE, 0);
@@ -385,6 +422,7 @@ rf_interface_main_window_create (MediaModule *mmod) {
 	gtk_widget_show (hbox2);
 	gtk_box_pack_start (GTK_BOX (vbox1), hbox2, FALSE, FALSE, 0);
 	gtk_container_set_border_width (GTK_CONTAINER (hbox2), 5);
+	rf_widget_add (hbox2, "rf box bottom");
 
 	alignmentBack = gtk_alignment_new (0.5, 0.5, 1, 1);
 	gtk_widget_show (alignmentBack);
