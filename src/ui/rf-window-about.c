@@ -20,16 +20,11 @@
 #include <stdio.h>
 #include <glib.h>
 #include <gtk/gtk.h>
-#include <gnome.h>
 
 #include "../rafesia.h"
-//#include <libgnome/libgnome.h>
-//#include <libgnomeui-2.0/gnome.h>
 
 GtkWidget *
 rf_window_about_new (GtkWidget *parent) {
-
-//	rf_ (NULL);
 
 }
 

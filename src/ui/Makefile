@@ -9,7 +9,7 @@ ui:
 	@echo " CC   rf-window-main.c"
 	@$(CC) `pkg-config --cflags gtk+-2.0` -I$(LOCINC) -c rf-window-main.c -o rf-window-main.o
 	@echo " CC   rf-window-about.c"
-	@$(CC) `pkg-config --cflags gtk+-2.0 libgnomeui-2.0` -I$(LOCINC) -c rf-window-about.c -o rf-window-about.o
+	@$(CC) `pkg-config --cflags gtk+-2.0` -I$(LOCINC) -c rf-window-about.c -o rf-window-about.o
 #	@gcc `pkg-config --cflags gtk+-2.0` -I$(LOCINC) -c rf-window-about.c -o rf-window-about.o
 
 clean:

@@ -23,8 +23,6 @@
 #include "plugins/plugins.h"
 #include "ui/rf-window-main.h"
 
-#include <gnome.h>
-
 GMainLoop         *mainloop;
 MediaModule       *mediamod;
 
@@ -106,7 +104,6 @@ int
 main (gint argc, gchar *argv[]) {
 
 	GMainContext      *maincontext;
-	GnomeProgram      *my_app;
 	gint               i;
 	gchar             *mrl = NULL;
 
@@ -131,8 +128,6 @@ main (gint argc, gchar *argv[]) {
 	gtk_init (&argc, &argv);
 	
 	g_set_application_name ("Rafesia Movie Player");
-//	my_app = gnome_program_init ("Rafesia", VERSION, LIBGNOMEUI_MODULE,
-//	                            argc, argv, GNOME_PARAM_NONE);
 	
 	mediamod = rf_module_media_load ("./plugins", NULL);
 	
