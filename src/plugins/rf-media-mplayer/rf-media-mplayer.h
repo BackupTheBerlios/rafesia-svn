@@ -17,6 +17,7 @@ struct _RfMediaMplayer {
 	GtkWidget                   widget;
 	
 	gchar                      *file;
+	gint                        status;
 	
 	gint                        mp_in;
 	FILE                       *stream_input;

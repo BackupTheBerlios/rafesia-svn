@@ -24,9 +24,17 @@
 
 gint
 open (MediaModule *module, gchar *mrl) {
-
-	rf_media_mplayer_open (module->widget, mrl);
 	
+	RfMediaMplayer *rmm;
+	
+	g_return_if_fail (module != NULL);
+	g_return_if_fail (module->widget != NULL);
+	g_return_if_fail (IS_RF_MEDIA_MPLAYER (module->widget));
+
+	rmm = RF_MEDIA_MPLAYER (module->widget);
+	
+	rf_media_mplayer_open (module->widget, mrl);
+	rmm->status = RF_STATUS_PLAY;
 	return 0;
 
 }
@@ -44,7 +52,8 @@ play (MediaModule *module) {
 	
 	g_io_channel_write_chars (rmm->channel_input, "seek 0 0\n", -1, NULL, NULL);
 	g_io_channel_flush (rmm->channel_input, NULL);
-
+	rmm->status = RF_STATUS_PLAY;
+	
 	return 0;
 	
 }
@@ -67,12 +76,10 @@ rf_media_pause (MediaModule *module) {
 
 	rmm = RF_MEDIA_MPLAYER (module->widget);
 	
-	//fflush (rmm->stream_input);
-	//g_fprintf (rmm->stream_input, "pause\n");
-	
 	g_io_channel_write_chars (rmm->channel_input, "pause\n", -1, NULL, NULL);
 	g_io_channel_flush (rmm->channel_input, NULL);
-
+	rmm->status = RF_STATUS_PAUSE;
+	
 	return 0;
 	
 }
@@ -80,27 +87,6 @@ rf_media_pause (MediaModule *module) {
 gint
 go (MediaModule *module, gint pos_stream, gint pos_time, gboolean actual) {
 	
-	/*RfMediaXine        *media = RF_MEDIA_XINE (module->widget);
-	gint                ps = 0, pt = 0;
-	
-	switch (actual) {
-		case 0:
-			xine_play (media->stream, pos_stream, pos_time);
-			xine_set_param (media->stream, XINE_PARAM_SPEED, XINE_SPEED_NORMAL);
-			xine_set_param (media->stream, XINE_PARAM_SPEED, XINE_SPEED_NORMAL);
-			break;
-		case 1:
-			xine_get_pos_length (media->stream, &ps, &pt, NULL);
-			if (pos_stream == 0)
-				xine_play (media->stream, 0, pt+pos_time);
-			else
-				xine_play (media->stream, ps+pos_stream, 0);
-				xine_set_param (media->stream, XINE_PARAM_SPEED, XINE_SPEED_NORMAL);
-			break;
-	}
-	
-	return (0);*/
-
 	RfMediaMplayer *rmm;
 	
 	g_return_if_fail (module != NULL);
@@ -109,9 +95,53 @@ go (MediaModule *module, gint pos_stream, gint pos_time, gboolean actual) {
 
 	rmm = RF_MEDIA_MPLAYER (module->widget);
 	
-	//g_io_channel_write_chars (rmm->channel_input, "seek 5 0\n", -1, NULL, NULL);	
-	//g_io_channel_flush (rmm->channel_input, NULL);
+	switch (actual) {
+		case 0:
+			if (pos_stream == 0) {
+				
+				gchar *cmd = g_strdup_printf ("seek %d 2\n", pos_time/1000);
+				
+				g_io_channel_write_chars (rmm->channel_input, cmd, -1, NULL, NULL);
+				g_io_channel_flush (rmm->channel_input, NULL);
+				g_free (cmd);
+				
+			} else {
+				
+				gint pos_t = (pos_stream * rmm->length) / 65536;
+				gchar *cmd = g_strdup_printf ("seek %d 2\n", pos_t);
+				
+				g_io_channel_write_chars (rmm->channel_input, cmd, -1, NULL, NULL);
+				g_io_channel_flush (rmm->channel_input, NULL);
+				g_free (cmd);
+				
+			}
+			
+			break;
+		case 1:
+			if (pos_stream == 0) {
+				
+				gchar *cmd = g_strdup_printf ("seek %d 0\n", pos_time/1000);
 
+				g_io_channel_write_chars (rmm->channel_input, cmd, -1, NULL, NULL);
+				g_io_channel_flush (rmm->channel_input, NULL);
+				g_free (cmd);
+
+			} else {
+				
+				gint pos_t = (pos_stream * rmm->length) / 65536;
+				gchar *cmd = g_strdup_printf ("seek %d 0\n", pos_t);
+				
+				g_io_channel_write_chars (rmm->channel_input, cmd, -1, NULL, NULL);
+				g_io_channel_flush (rmm->channel_input, NULL);
+				g_free (cmd);
+				
+			}
+			
+			break;
+	}
+	
+	rmm->status = RF_STATUS_PLAY;
+	
 	return 0;
 	
 }
@@ -142,7 +172,9 @@ gint
 get_status (MediaModule *module) {
 	
 	RfMediaMplayer *rmm = RF_MEDIA_MPLAYER (module->widget);
-
+	
+	return rmm->status;
+	
 	if (rmm->ready)
 		return RF_STATUS_STOP;
 	else

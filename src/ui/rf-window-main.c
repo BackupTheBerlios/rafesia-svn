@@ -158,7 +158,7 @@ seek_cb (GtkWidget* widget, MediaModule *mmod) {
 	GtkWidget    *img = rf_widget_get ("rf play image");
 	
 	if (!no_recursion ) {
-		mmod->go (mmod, (gint) GTK_ADJUSTMENT(widget)->value, 0, 0); 
+		mmod->go (mmod, (gint) GTK_ADJUSTMENT (widget)->value, 0, 0); 
 		if (speed == RF_STATUS_PAUSE && img != NULL)
 			gtk_image_set_from_stock (GTK_IMAGE (img), "gtk-media-pause", GTK_ICON_SIZE_BUTTON);
 	}
