@@ -31,89 +31,36 @@ rf_window_about_new (GtkWidget *parent) {
 GtkWidget *
 rf_window_about_build (GtkWidget *parent) {
 
-
-//	GtkWidget *dialog;
-//	dialog = gtk_about_dialog_new ();
-//	exit (0);
-//	exit (0);
-	//gtk_show_about_dialog (parent, NULL);
-	
-//	gtk_widget_destroy (dialog);
-//	GtkWidget *win;
-//win = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-//	gtk_widget_show (win);
-//return (win);
-	
-
-//	GtkWidget *win;
-//	const gchar *authors[] = {"Lukasz Zukowski", "Piotr Tarasewicz", NULL};
-//	win = gnome_about_new ("Rafesia", "2.22", "aaaa", authors, authors, NULL, "dfdfd", NULL);
- /* 
 	GtkWidget *dialog;
 	GtkWidget *vbox;
 	GtkWidget *label;
-
+       	gchar *str_name;
+	gchar *str_authors;
+	gchar *str;
+	
+	gchar *authors[] = {"Łukasz Żukowski", "Piotr Tarasewicz", NULL};
+        
 	dialog = gtk_dialog_new_with_buttons ("About", GTK_WINDOW (parent), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_STOCK_CLOSE, GTK_RESPONSE_CLOSE, NULL);
 	gtk_window_set_resizable (GTK_WINDOW (dialog), FALSE);
 	
 	vbox = gtk_vbox_new (FALSE, 0);
 	gtk_box_pack_start (GTK_BOX (GTK_DIALOG (dialog)->vbox), vbox, FALSE, FALSE, 0);
-	
-	gchar *str;
-	str = g_strdup_printf ("Rafesia %s", "0.0.1"); // FIXME na razie nie chce sie opierac na rafesia.h
-	label = gtk_label_new (str);
+	gtk_container_set_border_width (GTK_CONTAINER(vbox), 4);
 
+	str_name = g_strdup_printf ("<span size=\"x-large\">Rafesia</span>\n<span size=\"small\">version %s</span>\n\n", VERSION);
+	str_authors = g_strjoinv ("\n", authors);
+	str = g_strjoin (NULL, str_name, str_authors);
+
+	label = gtk_label_new (str);
+	gtk_label_set_markup (GTK_LABEL (label), str);
+	gtk_label_set_justify (GTK_LABEL (label), GTK_JUSTIFY_CENTER);
 	gtk_box_pack_start (GTK_BOX (vbox), label, FALSE, FALSE, 0);
+
+	g_free (str_name);
+	g_free (str_authors);
+	g_free (str);
 
 	gtk_widget_show_all (vbox);
 	gtk_dialog_run (GTK_DIALOG (dialog));
 	gtk_widget_destroy (dialog);
-*/
-//  const gchar *authors[] = {"Luke Zukowski <pax@legar.pl>", "Piotr Tarasewicz <ptw@hurd.pl>", NULL };
-
-/*	GdkPixbuf   *pixbuf = NULL;
-    GError  	*error = NULL;
-    GtkIconInfo *icon_info;
-    
-    const gchar *authors[] = {
-        "Mike Hughes <mfh@psilord.com>",
-        "Spiros Papadimitriou <spapadim+@cs.cmu.edu>",
-        "Bradford Hovinen <hovinen@udel.edu>",
-        NULL
-    };
-    gchar *documenters[] = {
-	    NULL
-    };
-    gchar *translator_credits = _("translator_credits");
-    GtkWidget *about;
-    
-    icon_info = gtk_icon_theme_lookup_icon (gtk_icon_theme_get_default (), "gdict", 48, 0);
-    if (icon_info) {
-        pixbuf = gtk_icon_info_load_icon (icon_info, &error);
-        
-        if (error) {
-    	   g_warning (G_STRLOC ": cannot open %s: %s", gtk_icon_info_get_filename (icon_info), error->message);
-	   g_error_free (error);	
-        }
-    }
-    
-    about = gnome_about_new (_("Dictionary"), VERSION,
-                            "Copyright \xc2\xa9 1999-2003 Mike Hughes",
-                            _("A client for the MIT dictionary server."),
-			     (const char **)authors,
-			     (const char **)documenters,
-			     strcmp (translator_credits, "translator_credits") != 0 ? translator_credits : NULL,
-                             NULL);
-    if (pixbuf) {
-    	   gdk_pixbuf_unref (pixbuf);
-    }
-
-    gnome_window_icon_set_from_file (GTK_WINDOW (about), gtk_icon_info_get_filename (icon_info));
-    
-    if (icon_info) {
-    	gtk_icon_info_free (icon_info);
-    }
-
-    gtk_widget_show (about);
-*/
 }

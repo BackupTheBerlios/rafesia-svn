@@ -257,7 +257,8 @@ rf_interface_main_window_create (MediaModule *mmod) {
 	GtkWidget        *menuRafesia_quit;
 
 	GtkWidget        *menuHelp_about;
-	
+	GtkWidget        *menuHelp_about_icon;
+
 
 	GtkWidget        *hbox1;
 	GtkWidget        *buttonAbout;
@@ -322,7 +323,12 @@ rf_interface_main_window_create (MediaModule *mmod) {
 	help1 = gtk_menu_new ();
 	gtk_menu_item_set_submenu (GTK_MENU_ITEM (menuitem_help), help1);
 
-	menuHelp_about = gtk_image_menu_item_new_from_stock ("gtk-about", accel_group);
+	menuHelp_about = gtk_image_menu_item_new_with_mnemonic ("_About");
+	menuHelp_about_icon = gtk_image_new_from_stock ("gtk-help", GTK_ICON_SIZE_MENU);
+	gtk_widget_show (menuHelp_about_icon);
+	gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (menuHelp_about), menuHelp_about_icon);
+
+
 	gtk_widget_show (menuHelp_about);
 	gtk_container_add (GTK_CONTAINER (help1), menuHelp_about);
 	
