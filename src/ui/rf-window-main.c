@@ -19,6 +19,7 @@
  */
 
 #include <gtk/gtk.h>
+#include <gdk/gdkkeysyms.h>
 #include "../rafesia.h"
 #include "../core/internal.h"
 #include "../plugins/plugins.h"
@@ -221,7 +222,7 @@ rf_fullscreen (GtkWidget *widget, MediaModule *mmod) {
 		widget = rf_widget_get ("rf menubar top");
 		if ( widget != NULL )
 			gtk_widget_hide (widget);
- */
+  */
 		widget = rf_widget_get ("rf box label");
 		if ( widget != NULL )
 			gtk_widget_hide (widget);
@@ -317,6 +318,9 @@ rf_interface_main_window_create (MediaModule *mmod) {
 	
 	
 	GtkWidget        *menuFilm_fullscreen;
+	GtkWidget        *menuFilm_play;
+	GtkWidget        *menuFilm_back;
+	GtkWidget        *menuFilm_forward;
 	GtkWidget        *menuRafesia_open;
 	GtkWidget        *menuSeparator;
 	GtkWidget        *menuRafesia_quit;
@@ -415,9 +419,22 @@ rf_interface_main_window_create (MediaModule *mmod) {
 	gtk_widget_show (menuRafesia_quit);
 	gtk_container_add (GTK_CONTAINER (menu1), menuRafesia_quit);
 
+	menuFilm_play = gtk_image_menu_item_new_with_label ("Play/Pause");
+	gtk_widget_show (menuFilm_play);
+	gtk_container_add (GTK_CONTAINER (menu_film), menuFilm_play);
+	
+	menuFilm_back = gtk_image_menu_item_new_with_label ("Backward");
+	gtk_widget_show (menuFilm_back);
+	gtk_container_add (GTK_CONTAINER (menu_film), menuFilm_back);
+
+	menuFilm_forward = gtk_image_menu_item_new_with_label ("Forward");
+	gtk_widget_show (menuFilm_forward);
+	gtk_container_add (GTK_CONTAINER (menu_film), menuFilm_forward);
+	
 	menuFilm_fullscreen =gtk_image_menu_item_new_with_label ("Fullscreen");
 	gtk_widget_show (menuFilm_fullscreen);
 	gtk_container_add (GTK_CONTAINER (menu_film), menuFilm_fullscreen);
+	
 	
 	if ( mmod->widget != NULL)
 		gtk_container_add (GTK_CONTAINER (vbox1), mmod->widget);
@@ -520,7 +537,12 @@ rf_interface_main_window_create (MediaModule *mmod) {
 	g_signal_connect (GTK_OBJECT (window), "delete_event", G_CALLBACK (rafesia_quit),NULL);
 	g_signal_connect (GTK_OBJECT (window), "destroy_event", G_CALLBACK (rafesia_quit),NULL);
 	
+	g_signal_connect (GTK_OBJECT (menuFilm_play), "activate", G_CALLBACK (rf_media_play), mmod);
+	gtk_widget_add_accelerator (menuFilm_play, "activate", accel_group, GDK_space, 0, GTK_ACCEL_VISIBLE);
+	
 	g_signal_connect (GTK_OBJECT (menuFilm_fullscreen), "activate", G_CALLBACK (rf_fullscreen), mmod);
+	gtk_widget_add_accelerator (menuFilm_fullscreen, "activate", accel_group, GDK_F, 0, GTK_ACCEL_VISIBLE);
+
 	g_signal_connect (GTK_OBJECT (menuRafesia_open), "activate", G_CALLBACK (rf_file_open_cb), NULL);
 	g_signal_connect (GTK_OBJECT (menuRafesia_quit), "activate", G_CALLBACK (rafesia_quit), NULL);
 	
@@ -528,11 +550,20 @@ rf_interface_main_window_create (MediaModule *mmod) {
 	
 	g_signal_connect (GTK_OBJECT (buttonPlay), "button-release-event", G_CALLBACK (rf_media_play), mmod);
 	g_signal_connect (GTK_OBJECT (buttonPlay), "activate", G_CALLBACK (rf_media_play), mmod);
+	
 	g_signal_connect (GTK_OBJECT (buttonBack), "pressed", G_CALLBACK (rf_media_go_backward), mmod);
 	g_signal_connect (GTK_OBJECT (buttonBack), "activate", G_CALLBACK (rf_media_go_backward), mmod);
+	g_signal_connect (GTK_OBJECT (menuFilm_back), "activate", G_CALLBACK (rf_media_go_backward), mmod);
+	gtk_widget_add_accelerator (menuFilm_back, "activate", accel_group, GDK_Left, GDK_MOD1_MASK, GTK_ACCEL_VISIBLE);
+	
 	g_signal_connect (GTK_OBJECT (buttonForward), "pressed", G_CALLBACK (rf_media_go_forward), mmod);
 	g_signal_connect (GTK_OBJECT (buttonForward), "activate", G_CALLBACK (rf_media_go_forward), mmod);
+	g_signal_connect (GTK_OBJECT (menuFilm_forward), "activate", G_CALLBACK (rf_media_go_forward), mmod);
+	gtk_widget_add_accelerator (menuFilm_forward, "activate", accel_group, GDK_Right, GDK_MOD1_MASK, GTK_ACCEL_VISIBLE);
+	
 	g_signal_connect (GTK_OBJECT (seekerTime), "value-changed", G_CALLBACK (seek_cb), mmod);
+	
+	gtk_window_add_accel_group (GTK_WINDOW (window), accel_group);
 
 	mediamod = mmod;
 	g_timeout_add (1000, update_slider_cb, seekerTime);

@@ -237,12 +237,20 @@ rf_media_xine_get_type (void) {
 	
 }
 
+gboolean
+rf_media_xine_key_press ( GtkWidget *this,  GdkEventKey *event, gpointer user_data) {
+	
+	gtk_signal_emit_by_name (GTK_OBJECT (gtk_widget_get_toplevel (GTK_WIDGET (this))),  "key_press_event", event, NULL);
+	
+}
+
 GtkWidget *
 rf_media_xine_new (void) {
 	
 	GtkWidget *widget = GTK_WIDGET (g_object_new (rf_media_xine_get_type (), NULL));
 
 	g_object_set (widget, "events", GDK_ALL_EVENTS_MASK, NULL);
+	g_signal_connect (GTK_OBJECT (widget), "key-press-event", G_CALLBACK (rf_media_xine_key_press), NULL);
 	g_signal_connect (GTK_OBJECT (widget), "expose-event", G_CALLBACK (rf_media_xine_expose),NULL);
 	
 	return widget;
