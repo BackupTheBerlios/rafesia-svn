@@ -38,7 +38,7 @@ rf_widget_get (gchar *name) {
 		wname = g_object_get_data (G_OBJECT(lista->data), "rf_widget_name");
 		
 		if ( g_ascii_strcasecmp (name, wname) == 0 )
-			return GTK_WIDGET(lista->data);
+			return (GtkWidget *)lista->data;
 
 		lista = g_slist_next (lista);
 	
@@ -107,9 +107,12 @@ media_event_cb (gint event) {
 	
 	switch (event) {
 		case RF_EVENT_PLAYBACK_FINISHED: {
+		
 			MediaModule   *mmod = (MediaModule *) get_mediamodule();
+			GtkWidget     *seek = rf_widget_get ("rf media progress seeker");
 			gint           length_time;
 			
+			gtk_adjustment_set_value ( (GtkAdjustment *)seek, 0);
 			mmod->go (mmod, 0, 0, 0);
 			mmod->get_position (mmod, NULL, NULL, &length_time);
 			mmod->stop (mmod);

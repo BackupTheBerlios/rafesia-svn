@@ -27,38 +27,40 @@
 MediaModule *get_mediamodule (void);
 
 MediaModule        *mediamod;
-GtkWidget          *labelPlaying;
-GtkWidget          *labelTime;
-GtkWidget          *imagePlay;
 static gint         step = 5000;            // step in miliseconds
 static int          no_recursion;
-
-GtkWidget          *window;
 gboolean            fullscreen;
 
 void
 rf_interface_labelplaying_update (gchar *mrl) {
-
+	
+	GtkWidget *lab = rf_widget_get ("rf playing file label");
 	gchar *file=mrl;
 	gint i=0;
-
+	
+	if ( lab == NULL)
+		return;
+	
 	for (; mrl[i]!='\0'; i++) {
 		if(mrl[i] == '/' || mrl[i] == '\\')
 			file=&mrl[i+1];
 	}
 
-	gtk_label_set_text (GTK_LABEL (labelPlaying), file);
+	gtk_label_set_text (GTK_LABEL (lab), file);
 
 }
 
 void
 rf_media_open_mrl (gchar *mrl, MediaModule *mmod) {
 
-	int i=0;
-
+	gint i=0;
+	GtkWidget *img = rf_widget_get ("rf play image");
+	
 	mmod->open_mrl (mmod, mrl);
 	mmod->play (mmod);
-	gtk_image_set_from_file (GTK_IMAGE (imagePlay), g_build_filename ("./images/", "pause.png", NULL));
+
+	if (img != NULL)
+		gtk_image_set_from_file (GTK_IMAGE (img), g_build_filename ("./images/", "pause.png", NULL));
 
 	rf_interface_labelplaying_update (mrl);
 	
@@ -67,17 +69,24 @@ rf_media_open_mrl (gchar *mrl, MediaModule *mmod) {
 void
 rf_media_play (GtkButton *button, MediaModule *mmod) {
 
-	gint status = mediamod->get_status (mediamod);
-
+	gint          status = mediamod->get_status (mediamod);
+	GtkWidget    *img = rf_widget_get ("rf play image");
+	
 	switch (status) {
 		case RF_STATUS_STOP:
-		case RF_STATUS_PAUSE:
+		case RF_STATUS_PAUSE: 
 			mediamod->play(mediamod);
-			gtk_image_set_from_file (GTK_IMAGE (imagePlay), g_build_filename ("./images/", "pause.png", NULL));
+
+			if (img != NULL)
+				gtk_image_set_from_file (GTK_IMAGE (img), g_build_filename ("./images/", "pause.png", NULL));
+			
 			break;
 		case RF_STATUS_PLAY:
 			mediamod->pause(mediamod);
-			gtk_image_set_from_file(GTK_IMAGE (imagePlay), g_build_filename ("./images/", "play.png", NULL));
+			
+			if (img != NULL)
+				gtk_image_set_from_file(GTK_IMAGE (img), g_build_filename ("./images/", "play.png", NULL));
+			
 			break;
 	}
 
@@ -85,10 +94,14 @@ rf_media_play (GtkButton *button, MediaModule *mmod) {
 
 void
 rf_interface_set_time_label (gint pos_time, gint length_time) {
-
+	
+	GtkWidget *widget = rf_widget_get ("rf time label");
 	gchar *curtime_str, *length_str;
 	gchar time_str[256];
 	gint cur_time, length;
+	
+	if ( widget == NULL )
+		return;
 	
 	cur_time = pos_time / 1000;
 	length   = length_time / 1000;
@@ -97,7 +110,7 @@ rf_interface_set_time_label (gint pos_time, gint length_time) {
 	length_str = int_to_timestring (length, 256);
 	
 	snprintf(time_str, 256, "%s / %s", curtime_str, length_str);
-	gtk_label_set_text (GTK_LABEL (labelTime), time_str);
+	gtk_label_set_text (GTK_LABEL (widget), time_str);
 
 }
 
@@ -106,17 +119,20 @@ update_slider_cb (gpointer seek) {
 
 	gint pos_stream, pos_time, length_time;
 	GtkObject *seeker = GTK_OBJECT(seek);
+	GtkWidget *img = rf_widget_get ("rf play image");
 	gfloat pos;
 
 	if (mediamod->get_status (mediamod) != RF_STATUS_PLAY) {
-	
-		gtk_image_set_from_file(GTK_IMAGE (imagePlay), g_build_filename ("./images/", "play.png", NULL));
+		
+		if (img != NULL)
+			gtk_image_set_from_file(GTK_IMAGE (img), g_build_filename ("./images/", "play.png", NULL));
 
 		return (TRUE);
 		
 	}
 	
-	gtk_image_set_from_file(GTK_IMAGE (imagePlay), g_build_filename ("./images/", "pause.png", NULL));
+	if (img != NULL)
+		gtk_image_set_from_file(GTK_IMAGE (img), g_build_filename ("./images/", "pause.png", NULL));
 	
 	if (!mediamod->get_position (mediamod, &pos_stream, &pos_time, &length_time))
 		return (TRUE);
@@ -137,29 +153,38 @@ update_slider_cb (gpointer seek) {
 static void
 seek_cb (GtkWidget* widget, MediaModule *mmod) {
 
-	gint speed = mmod->get_status (mmod);
-
+	gint          speed = mmod->get_status (mmod);
+	GtkWidget    *img = rf_widget_get ("rf play image");
+	
 	if (!no_recursion ) {
 		mmod->go (mmod, (gint) GTK_ADJUSTMENT(widget)->value, 0, 0); 
-		if (speed == RF_STATUS_PAUSE)
-			gtk_image_set_from_file (GTK_IMAGE (imagePlay), g_build_filename ("./images/", "pause.png", NULL));
+		if (speed == RF_STATUS_PAUSE && img != NULL)
+			gtk_image_set_from_file (GTK_IMAGE (img), g_build_filename ("./images/", "pause.png", NULL));
 	}
 	
 }
 
 void
 rf_media_go_backward (GtkButton *button, MediaModule *mmod) {
-
+	
+	GtkWidget *img = rf_widget_get ("rf play image");
+	
 	mmod->go (mmod, 0, 0-step, 1);
-	gtk_image_set_from_file (GTK_IMAGE (imagePlay), g_build_filename ("./images/", "pause.png", NULL));
+	
+	if (img != NULL)
+		gtk_image_set_from_file (GTK_IMAGE (img), g_build_filename ("./images/", "pause.png", NULL));
 	
 }
 
 void
 rf_media_go_forward (GtkButton *button, MediaModule *mmod) {
 
+	GtkWidget *img = rf_widget_get ("rf play image");
+
 	mmod->go (mmod, 0, step, 1);
-	gtk_image_set_from_file (GTK_IMAGE (imagePlay), g_build_filename ("./images/", "pause.png", NULL));
+
+	if (img != NULL)
+		gtk_image_set_from_file (GTK_IMAGE (img), g_build_filename ("./images/", "pause.png", NULL));
 	
 }
 
@@ -182,7 +207,10 @@ rf_fullscreen (GtkWidget *widget, MediaModule *mmod) {
 		if ( widget != NULL )
 			gtk_widget_show (widget);
 		
-		gtk_window_unfullscreen (GTK_WINDOW (window) );
+		widget = rf_widget_get ("rafesia main window");
+		if ( widget != NULL )
+			gtk_window_unfullscreen (GTK_WINDOW (widget));
+	
 		fullscreen = FALSE;
 		
 	} else {
@@ -202,7 +230,10 @@ rf_fullscreen (GtkWidget *widget, MediaModule *mmod) {
 		if ( widget != NULL )
 			gtk_widget_hide (widget);
 		
-		gtk_window_fullscreen ( GTK_WINDOW (window) );
+		widget = rf_widget_get ("rafesia main window");
+		if ( widget !=NULL )
+			gtk_window_fullscreen ( GTK_WINDOW (widget) );
+		
 		fullscreen = TRUE;
 		
 	}
@@ -273,7 +304,7 @@ get_mediamodule (void) {
 GtkWidget *
 rf_interface_main_window_create (MediaModule *mmod) {
 
-	
+	GtkWidget        *window;
 	GtkWidget        *vbox1;
 
 	GtkWidget        *menubar;
@@ -295,9 +326,11 @@ rf_interface_main_window_create (MediaModule *mmod) {
 
 
 	GtkWidget        *hbox1;
+	GtkWidget        *labelPlaying;
 	GtkWidget        *buttonAbout;
 	GtkWidget        *labelAbout;
 	GtkWidget        *labelSpace;
+	GtkWidget        *labelTime;
 
 	GtkWidget        *hbox2;
 
@@ -306,6 +339,7 @@ rf_interface_main_window_create (MediaModule *mmod) {
 	GtkWidget        *imageBack;
 
 	GtkWidget        *buttonPlay;
+	GtkWidget        *imagePlay;
 
 	GtkWidget        *alignmentForward;
 	GtkWidget        *buttonForward;
@@ -397,7 +431,9 @@ rf_interface_main_window_create (MediaModule *mmod) {
 	labelPlaying = gtk_label_new ("");
 	gtk_widget_show (labelPlaying);
 	gtk_box_pack_start (GTK_BOX (hbox1), labelPlaying, FALSE, FALSE, 0);
+	rf_widget_add (labelPlaying, "rf playing file label");
 
+/*
 	buttonAbout = gtk_button_new();
 	gtk_button_set_relief(GTK_BUTTON(buttonAbout), GTK_RELIEF_NONE);
 	gtk_widget_show(buttonAbout);
@@ -407,7 +443,8 @@ rf_interface_main_window_create (MediaModule *mmod) {
 	gtk_label_set_markup(GTK_LABEL(labelAbout), "<span underline=\"single\" foreground=\"#0000FF\">(o filmie)</span>");
 	gtk_widget_show (labelAbout);
 	gtk_container_add (GTK_CONTAINER(buttonAbout), labelAbout);
-
+ */
+	
 	labelSpace = gtk_label_new ("");
 	gtk_widget_show (labelSpace);
 	gtk_box_pack_start (GTK_BOX (hbox1), labelSpace, TRUE, TRUE, 0);
@@ -415,7 +452,7 @@ rf_interface_main_window_create (MediaModule *mmod) {
 	labelTime = gtk_label_new ("0:00:00 / 0:00:00");
 	gtk_widget_show (labelTime);
 	gtk_box_pack_start (GTK_BOX (hbox1), labelTime, FALSE, FALSE, 0);
-
+	rf_widget_add (labelTime, "rf time label");
 
 
 	hbox2 = gtk_hbox_new (FALSE, 5);
@@ -446,7 +483,7 @@ rf_interface_main_window_create (MediaModule *mmod) {
 	gtk_widget_show (imagePlay);
 	gtk_container_add (GTK_CONTAINER (buttonPlay), imagePlay);
 	gtk_misc_set_padding (GTK_MISC (imagePlay), 6, 6);
-
+	rf_widget_add (imagePlay, "rf play image");
 
 	alignmentForward = gtk_alignment_new (0.5, 0.5, 1, 1);
 	gtk_widget_show (alignmentForward);
@@ -467,7 +504,7 @@ rf_interface_main_window_create (MediaModule *mmod) {
 	gtk_widget_show (scaleTime);
 	gtk_box_pack_start (GTK_BOX (hbox2), scaleTime, TRUE, TRUE, 0);
 	gtk_scale_set_draw_value (GTK_SCALE (scaleTime), FALSE);
-
+	rf_widget_add ( (GtkWidget *)seekerTime, "rf media progress seeker");
 
 	alignmentVolume = gtk_alignment_new (0.5, 0.5, 1, 1);
 	gtk_widget_show (alignmentVolume);
