@@ -18,7 +18,12 @@ struct _RfMediaMplayer {
 	
 	gchar                      *file;
 	gint                        status;
-	
+	gint                        width;
+	gint                        height;
+	gint                        length;
+	gulong                      timer;
+	gboolean                    ready;
+
 	gint                        mp_in;
 	FILE                       *stream_input;
 	GIOChannel                 *channel_input;
@@ -27,13 +32,7 @@ struct _RfMediaMplayer {
 	
 	gint                        mp_pid;
 	guint32                     xid;
-
-	gint                        width;
-	gint                        height;
-	gint                        length;
-	gulong                      timer;
-	gboolean                    ready;
-
+	guint                       watch_out_id;
 };
 
 struct _RfMediaMplayerClass {

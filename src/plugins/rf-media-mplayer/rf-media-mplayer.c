@@ -47,7 +47,6 @@ rf_media_mplayer_launch (GtkWidget *widget) {
 	
 	g_free (argv[2]);
 
-	
 	rmm->channel_output   = g_io_channel_unix_new (rmm->mp_out);
 	rmm->stream_input     = fdopen (rmm->mp_in, "w");
 	rmm->channel_input    = g_io_channel_unix_new (rmm->mp_in);
@@ -55,7 +54,9 @@ rf_media_mplayer_launch (GtkWidget *widget) {
 	rmm->width            = 0;
 	rmm->height           = 0;
 	rmm->length           = 0;
-	
+	rmm->timer            = 0;
+	rmm->ready            = FALSE;
+
 	while ((rmm->width == 0) || (rmm->length == 0) || (rmm->height == 0)) {
 		
 		gchar         *buffer;
@@ -76,10 +77,12 @@ rf_media_mplayer_launch (GtkWidget *widget) {
 				
 		g_free (buffer);
 	}
+	
 	gtk_widget_set_size_request (GTK_WIDGET (rmm), rmm->width, rmm->height);
-			
+	rmm->watch_out_id = g_io_add_watch (rmm->channel_output, G_IO_IN, rf_media_mplayer_output_lookup, rmm);
+	g_timeout_add (100, rf_media_mplayer_timeout, rmm);
+	
 	return 0;
-
 }
 
 void
@@ -93,9 +96,19 @@ rf_media_mplayer_stop (GtkWidget *widget) {
 	rmm = RF_MEDIA_MPLAYER (widget);
 	
 	if (rmm->mp_pid >0) {
+		GSource *watch_source = g_main_context_find_source_by_id (NULL, rmm->watch_out_id);
+		
+		g_source_destroy (watch_source);
+		g_io_channel_shutdown (rmm->channel_input, FALSE, NULL);
+		g_io_channel_shutdown (rmm->channel_output, FALSE, NULL);
+		rmm->channel_input = NULL;
+
+		fclose (rmm->stream_input);
+		
 		kill (rmm->mp_pid, SIGKILL);
 		kill (rmm->mp_pid, SIGKILL);
 		rmm->mp_pid = -1;
+		rmm->ready = TRUE;
 	}
 }
 
@@ -109,24 +122,11 @@ rf_media_mplayer_restart (GtkWidget *widget) {
 
 	rmm = RF_MEDIA_MPLAYER (widget);
 
-	if (rf_media_mplayer_is_running (widget)) {
-		
+	if (rf_media_mplayer_is_running (widget))
 		rf_media_mplayer_stop (widget);
-		rmm->ready = TRUE;
 
-	}
-
-	if (rmm->ready) {
-		
-		if (rmm->timer)
-			rmm->timer = 0;
-
-		rmm->ready = FALSE;
-		rmm->timer = 0;
+	if (rmm->ready)
 		rf_media_mplayer_launch (widget);
-		//g_timeout_add (100, rf_media_mplayer_timeout, rmm);
-	}
-
 }
 
 gpointer
@@ -143,7 +143,7 @@ rf_media_mplayer_event_thread (gpointer data) {
 			report.xkey.window = GDK_WINDOW_XID (widget->window);
 			
 			//XSendEvent (GDK_WINDOW_XDISPLAY (widget->window), GDK_WINDOW_XID (widget->window), False, SubstructureRedirectMask, &report);
-			g_printf ("\t>> wcisnieto klawisz <<\n");
+			//g_printf ("\t>> wcisnieto klawisz <<\n");
 
 		}
 }
@@ -161,13 +161,6 @@ rf_media_mplayer_open (GtkWidget *widget, gchar *file) {
 	rmm->file = g_strdup (file);
 	pid = rf_media_mplayer_launch (GTK_WIDGET (widget));
 
-	rmm->timer = 0;
-	rmm->ready = FALSE;
-	
-	//g_timeout_add (100, rf_media_mplayer_timeout, rmm);
-	g_io_add_watch (rmm->channel_output, G_IO_IN, rf_media_mplayer_output_lookup, rmm);
-	
-	
 	//GThread *mplayer_thread = NULL;
 
 	//mplayer_thread = g_thread_create (rf_media_mplayer_event_thread, rmm, FALSE, NULL);
@@ -220,11 +213,18 @@ rf_media_mplayer_timeout (gpointer data) {
 	path = g_strdup_printf("/proc/%d", rmm->mp_pid);
 	
 	fp = (FILE *) g_fopen (path, "r");
+	
 	if (fp == NULL) {
+		
+		//rf_media_mplayer_stop (GTK_WIDGET (rmm));
 		rf_media_mplayer_restart (GTK_WIDGET (rmm));
+		
 		return FALSE;
-	} else
+		
+	} else {	
 		fclose (fp);
+		rmm->ready = FALSE;
+	}
 	
 	g_free (path);
 

@@ -47,8 +47,10 @@ play (MediaModule *module) {
 	g_return_if_fail (module != NULL);
 	g_return_if_fail (module->widget != NULL);
 	g_return_if_fail (IS_RF_MEDIA_MPLAYER (module->widget));
-
-	rmm = RF_MEDIA_MPLAYER (module->widget);	
+	
+	rmm = RF_MEDIA_MPLAYER (module->widget);
+	if (rmm->channel_input == NULL)
+		return -1;
 	
 	g_io_channel_write_chars (rmm->channel_input, "seek 0 0\n", -1, NULL, NULL);
 	g_io_channel_flush (rmm->channel_input, NULL);
@@ -75,6 +77,8 @@ rf_media_pause (MediaModule *module) {
 	g_return_if_fail (IS_RF_MEDIA_MPLAYER (module->widget));
 
 	rmm = RF_MEDIA_MPLAYER (module->widget);
+	if (rmm->channel_input == NULL)
+		return -1;
 	
 	g_io_channel_write_chars (rmm->channel_input, "pause\n", -1, NULL, NULL);
 	g_io_channel_flush (rmm->channel_input, NULL);
@@ -94,6 +98,8 @@ go (MediaModule *module, gint pos_stream, gint pos_time, gboolean actual) {
 	g_return_if_fail (IS_RF_MEDIA_MPLAYER (module->widget));
 
 	rmm = RF_MEDIA_MPLAYER (module->widget);
+	if (rmm->channel_input == NULL)
+		return -1;
 	
 	switch (actual) {
 		case 0:
