@@ -175,6 +175,26 @@ get_position (MediaModule *module, guint *pos_stream, guint *pos_time, guint *ti
 }
 
 gint
+get_movie_size (MediaModule *module, gint *height, gint *width) {
+	
+	RfMediaMplayer *rmm;
+	
+	g_return_if_fail (module != NULL);
+	g_return_if_fail (module->widget != NULL);
+	g_return_if_fail (IS_RF_MEDIA_MPLAYER (module->widget));
+	g_return_if_fail (height != NULL);
+	g_return_if_fail (width != NULL);
+
+	rmm = RF_MEDIA_MPLAYER (module->widget);
+	
+	*height = rmm->org_height;
+	*width = rmm->org_width;
+	
+	return 0;
+	
+}
+
+gint
 get_status (MediaModule *module) {
 	
 	RfMediaMplayer *rmm = RF_MEDIA_MPLAYER (module->widget);

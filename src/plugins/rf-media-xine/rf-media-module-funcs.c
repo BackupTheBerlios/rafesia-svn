@@ -109,11 +109,30 @@ get_position (MediaModule *module, gint *pos_stream, gint *pos_time, gint *time)
 }
 
 gint
+get_movie_size (MediaModule *module, gint *height, gint *width) {
+	
+	RfMediaXine *rmx;
+	
+	g_return_if_fail (module != NULL);
+	g_return_if_fail (module->widget != NULL);
+	g_return_if_fail (IS_RF_MEDIA_XINE (module->widget));
+	g_return_if_fail (height != NULL);
+	g_return_if_fail (width != NULL);
+
+	rmx = RF_MEDIA_XINE (module->widget);
+	
+	*height = 0;
+	*width = 0;
+	
+	return 0;
+}
+
+gint
 get_status (MediaModule *module) {
 
 	RfMediaXine     *media = RF_MEDIA_XINE(module->widget);
 
-	switch ( xine_get_status (media->stream) ) {
+	switch (xine_get_status (media->stream)) {
 		case XINE_STATUS_IDLE:
 			return RF_STATUS_EMPTY;
 		case XINE_STATUS_STOP:

@@ -24,6 +24,9 @@ struct _RfMediaMplayer {
 	gulong                      timer;
 	gboolean                    ready;
 
+	gint                        org_height;
+	gint                        org_width;
+
 	gint                        mp_in;
 	FILE                       *stream_input;
 	GIOChannel                 *channel_input;

@@ -63,6 +63,7 @@ struct _MediaModule {
 	gint (*go)                   (MediaModule *module, gint pos_stream, gint pos_time, gboolean actual);
 	gint (*get_position)         (MediaModule *module, gint *pos_stream, gint *pos_time, gint *time);
 	gint (*get_status)           (MediaModule *module);
+	gint (*get_movie_size)       (MediaModule *module, gint *height, gint *width);
 	gint (*event_init)           (void *mwidget, void (*media_event_cb)(gint event));
 	void (*set_fullscreen)       (MediaModule *module, gint fullscreen);
 	gboolean (*is_fullscreen)    (MediaModule *module);

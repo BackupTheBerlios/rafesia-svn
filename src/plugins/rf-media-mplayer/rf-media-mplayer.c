@@ -78,6 +78,9 @@ rf_media_mplayer_launch (GtkWidget *widget) {
 		g_free (buffer);
 	}
 	
+	rmm->org_width = rmm->width;
+	rmm->org_height = rmm->height;
+	
 	gtk_widget_set_size_request (GTK_WIDGET (rmm), rmm->width, rmm->height);
 	rmm->watch_out_id = g_io_add_watch (rmm->channel_output, G_IO_IN, rf_media_mplayer_output_lookup, rmm);
 	g_timeout_add (100, rf_media_mplayer_timeout, rmm);
@@ -136,16 +139,27 @@ rf_media_mplayer_event_thread (gpointer data) {
 	GtkWidget         *widget = GTK_WIDGET (data);
 	XEvent             report;
 	
-	while (1)
+	while (1) {
 		if (XCheckWindowEvent (GDK_WINDOW_XDISPLAY (widget->window), GDK_WINDOW_XID (widget->window), KeyPressMask, &report)) {
 			
-			report.xany.window = GDK_WINDOW_XID (widget->window);
-			report.xkey.window = GDK_WINDOW_XID (widget->window);
+			//report.xany.window = GDK_WINDOW_XID (widget->window);
+			//report.xkey.window = GDK_WINDOW_XID (widget->window);
 			
 			//XSendEvent (GDK_WINDOW_XDISPLAY (widget->window), GDK_WINDOW_XID (widget->window), False, SubstructureRedirectMask, &report);
 			//g_printf ("\t>> wcisnieto klawisz <<\n");
 
 		}
+		/*GdkEvent *event = gdk_event_get ();
+
+		if (event != NULL)
+		switch (event->type) {
+			case GDK_KEY_PRESS:
+			case GDK_KEY_RELEASE:
+				g_printf ("key press/release\n");
+				gdk_event_free (event);
+				break;
+		}*/
+	}
 }
 
 void
@@ -161,9 +175,9 @@ rf_media_mplayer_open (GtkWidget *widget, gchar *file) {
 	rmm->file = g_strdup (file);
 	pid = rf_media_mplayer_launch (GTK_WIDGET (widget));
 
-	//GThread *mplayer_thread = NULL;
+	GThread *mplayer_thread = NULL;
 
-	//mplayer_thread = g_thread_create (rf_media_mplayer_event_thread, rmm, FALSE, NULL);
+	mplayer_thread = g_thread_create (rf_media_mplayer_event_thread, rmm, FALSE, NULL);
 }
 
 gboolean
@@ -181,14 +195,15 @@ rf_media_mplayer_output_lookup (GIOChannel *source, GIOCondition condition, gpoi
 	
 	stream = fdopen (rmm->mp_out, "r");
 	fflush (stream);
-	buffer[0] = fgetc (stream);
+	
+	do {
 		
-	while ((buffer[i] != 0x0D) && (buffer[i] != '\n') && (i < 1024) && (buffer[i] != '\0')) {
-		i++;
 		buffer[i] = fgetc (stream);
-	}
+		i++;
 
-	buffer[i] = '\0';
+	} while ((buffer[i-1] != 0x0D) && (buffer[i-1] != '\n') && (buffer[i-1] != '\0' && (i < 1023)));
+
+	buffer[i-1] = '\0';
 
 	if (buffer != NULL)
 	if (g_str_has_prefix (buffer, "A:"))

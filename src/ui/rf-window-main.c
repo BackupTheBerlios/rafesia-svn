@@ -54,7 +54,7 @@ rf_interface_labelplaying_update (gchar *mrl) {
 void
 rf_media_open_mrl (gchar *mrl, MediaModule *mmod) {
 
-	gint       i=0;
+	gint       i = 0;
 	GtkWidget *img = rf_widget_get ("rf play image");
 	
 	mmod->open_mrl (mmod, mrl);
@@ -76,14 +76,14 @@ rf_media_play (GtkButton *button, MediaModule *mmod) {
 	switch (status) {
 		case RF_STATUS_STOP:
 		case RF_STATUS_PAUSE: 
-			mediamod->play(mediamod);
+			mediamod->play (mediamod);
 
 			if (img != NULL)
 				gtk_image_set_from_stock (GTK_IMAGE (img), "gtk-media-pause", GTK_ICON_SIZE_BUTTON);
 			
 			break;
 		case RF_STATUS_PLAY:
-			mediamod->pause(mediamod);
+			mediamod->pause (mediamod);
 			
 			if (img != NULL)
 				gtk_image_set_from_stock (GTK_IMAGE (img), "gtk-media-play", GTK_ICON_SIZE_BUTTON);
@@ -348,7 +348,7 @@ rf_media_widget_motion_event (GtkWidget *widget, GdkEventMotion *event, gpointer
 
 	g_return_val_if_fail (widget != NULL, FALSE);
 	g_return_val_if_fail (event != NULL, FALSE);
-	
+
 	if (fullscreen) {
 		GtkWidget *box       = rf_widget_get ("rf box bottom");
 		GtkWidget *box_label = rf_widget_get ("rf box label");
@@ -356,7 +356,7 @@ rf_media_widget_motion_event (GtkWidget *widget, GdkEventMotion *event, gpointer
 		x = event->x;
 		y = event->y;
 		
-		if ( box != NULL || box_label != NULL) {
+		if ( box != NULL && box_label != NULL) {
 			gint wy = gdk_screen_height () - (box->allocation.height + box_label->allocation.height);
 			
 			if (GTK_WIDGET_VISIBLE (box)) {
@@ -374,7 +374,6 @@ rf_media_widget_motion_event (GtkWidget *widget, GdkEventMotion *event, gpointer
 		
 		if (event->is_hint || (event->window != widget->window))
 			gdk_window_get_pointer (widget->window, &x, &y, &mods);
-	
 	}
 	
 	return (TRUE);	
@@ -399,6 +398,92 @@ rf_media_widget_button_press_event (GtkWidget *widget, GdkEventButton *event, gp
 	if (event->type == GDK_2BUTTON_PRESS && event->button == 1)
 			rf_fullscreen (NULL, NULL);
 		
+}
+
+void
+rf_main_window_size (GtkWidget *widget, GtkAllocation *allocation, gpointer user_data) {
+	
+	gint            mwid, mhig, wid, hig;
+	gfloat          ratio, mx, my, x, y, nratio;
+	gchar          *res;
+	GtkWidget      *media_alg;
+	GtkWidget      *media_fixed;
+	MediaModule    *mmod;
+	
+	g_return_if_fail (user_data != NULL);
+	mmod = (MediaModule *) user_data;
+	
+	mmod->get_movie_size (mmod, &mhig, &mwid);
+	
+	//media_alg = rf_widget_get ("rf alignment media");
+	media_fixed = rf_widget_get ("rf fixed media");
+	
+	//if (media_alg == NULL)
+	if (media_fixed == NULL)
+		return;
+	
+	//gdk_window_get_geometry (GDK_WINDOW (media_alg->window), NULL, NULL, &wid, &hig, NULL);
+	//gdk_window_get_geometry (GDK_WINDOW (media_fixed->window), NULL, NULL, &wid, &hig, NULL);
+	
+	wid = allocation->width;
+	hig = allocation->height;
+	
+	if (mwid == 0 || mhig == 0 || wid == 0 || hig == 0)
+		return;
+	
+	gint ww, hh;
+	gdk_window_get_geometry (GDK_WINDOW (GTK_WIDGET (mmod->widget)->window), NULL, NULL, &ww, &hh, NULL);
+	
+	/*
+	 * FIXME: poprawic koniecznie obliczanie ratio !!!
+	 */
+	
+	res = g_strdup_printf ("%dx%d", mwid, mhig);
+	sscanf (res, "%fx%f", &mx, &my);
+	ratio = mx / my;
+	g_free (res);
+
+	res = g_strdup_printf ("%dx%d", wid, hig);
+	sscanf (res, "%fx%f", &x, &y);
+	nratio = x / y;
+	g_free (res);
+	
+	if (ratio > nratio) {
+		
+		// obszar za wysoki, margines w pionie
+		
+		gfloat dx, tmp;
+		gint nhig;
+		
+		dx = x / mx;
+		tmp = dx * my;
+		res = g_strdup_printf ("%f", tmp);
+		sscanf (res, "%d,", &nhig);
+		g_free (res);
+		
+		//gtk_alignment_set_padding (GTK_ALIGNMENT (media_alg), (hig - nhig) / 2, (hig - nhig) / 2, 0, 0);
+		gtk_widget_set_usize (mmod->widget, wid, nhig);
+		//gtk_fixed_move (GTK_FIXED (widget), GTK_WIDGET (mmod->widget), 0, (hig - nhig) / 2);
+				
+	} else {
+		
+		// Obszar za szeroki, margines w poziomie
+		
+		gfloat dy, tmp;
+		gint nwid;
+		
+		dy = y / my;
+		tmp = dy * mx;
+		res = g_strdup_printf ("%f", tmp);
+		sscanf (res, "%d,", &nwid);
+		g_free (res);
+		
+		//gtk_alignment_set_padding (GTK_ALIGNMENT (media_alg), 0, 0, (wid - nwid) / 2, (wid - nwid) / 2);
+		gtk_widget_set_usize (mmod->widget, nwid, hig);
+		//gtk_fixed_move (GTK_FIXED (widget), GTK_WIDGET (mmod->widget), (wid - nwid) / 2, 0);
+
+	}
+
 }
 
 GtkWidget *
@@ -427,15 +512,16 @@ rf_interface_main_window_create (MediaModule *mmod) {
 	GtkWidget        *menuHelp_about;
 	GtkWidget        *menuHelp_about_icon;
 
-	GtkWidget        *eventbox_media;
-
 	GtkWidget        *hbox1;
 	GtkWidget        *labelPlaying;
 	GtkWidget        *buttonAbout;
 	GtkWidget        *labelAbout;
 	GtkWidget        *labelSpace;
 	GtkWidget        *labelTime;
-
+	
+	GtkWidget        *media_alignment;
+	GtkWidget        *media_fixed;
+	
 	GtkWidget        *hbox2;
 
 	GtkWidget        *alignmentBack;
@@ -541,16 +627,33 @@ rf_interface_main_window_create (MediaModule *mmod) {
 	gtk_widget_show (menuFilm_fullscreen);
 	gtk_container_add (GTK_CONTAINER (menu_film), menuFilm_fullscreen);
 	
+	
+	media_alignment = gtk_alignment_new (0.5, 0.5, 1, 1);
+	gtk_widget_show (media_alignment);
+	//gtk_container_add (GTK_CONTAINER (vbox1), media_alignment);
+	gtk_alignment_set_padding (GTK_ALIGNMENT (media_alignment), 0, 0, 0, 0);
+	rf_widget_add (media_alignment, "rf alignment media");
+	
+	
+	media_fixed = gtk_fixed_new ();
+	gtk_widget_show (media_fixed);
+	gtk_container_add (GTK_CONTAINER (vbox1), media_fixed);
+	rf_widget_add (media_alignment, "rf fixed media");
+	g_signal_connect (G_OBJECT (media_fixed), "motion-notify-event", G_CALLBACK (rf_media_widget_motion_event), NULL);
+	g_signal_connect (G_OBJECT (media_fixed), "key-press-event", G_CALLBACK (rf_media_widget_key_press_event), window);
+	g_signal_connect (G_OBJECT (media_fixed), "button-press-event", G_CALLBACK (rf_media_widget_button_press_event), NULL);
+	
 	if ( mmod->widget != NULL) {
 	
-		gtk_container_add (GTK_CONTAINER (vbox1), mmod->widget);
+		//gtk_container_add (GTK_CONTAINER (media_alignment), mmod->widget);
+		gtk_fixed_put (GTK_FIXED (media_fixed), GTK_WIDGET (mmod->widget), 0, 0);
 		rf_widget_add (mmod->widget, "rf media widget");
 		g_signal_connect (G_OBJECT (mmod->widget), "motion-notify-event", G_CALLBACK (rf_media_widget_motion_event), NULL);
 		g_signal_connect (G_OBJECT (mmod->widget), "key-press-event", G_CALLBACK (rf_media_widget_key_press_event), window);
 		g_signal_connect (G_OBJECT (mmod->widget), "button-press-event", G_CALLBACK (rf_media_widget_button_press_event), NULL);
 	
 	}
-
+	
 	hbox1 = gtk_hbox_new (FALSE, 5);
 	gtk_widget_show (hbox1);
 	gtk_box_pack_start (GTK_BOX (vbox1), hbox1, FALSE, FALSE, 0);
@@ -602,7 +705,7 @@ rf_interface_main_window_create (MediaModule *mmod) {
 	gtk_misc_set_padding (GTK_MISC (imagePlay), 6, 6);
 	rf_widget_add (imagePlay, "rf play image");
 
-	alignmentForward = gtk_alignment_new (0.5, 0.5, 1, 1);
+	alignmentForward = gtk_alignment_new (0, 0, 0, 0);
 	gtk_widget_show (alignmentForward);
 	gtk_box_pack_start (GTK_BOX (hbox2), alignmentForward, FALSE, FALSE, 0);
 	gtk_alignment_set_padding (GTK_ALIGNMENT (alignmentForward), 3, 3, 3, 3);
@@ -653,6 +756,7 @@ rf_interface_main_window_create (MediaModule *mmod) {
 	// Signals
 	g_signal_connect (GTK_OBJECT (window), "delete_event", G_CALLBACK (rafesia_quit),NULL);
 	g_signal_connect (GTK_OBJECT (window), "destroy_event", G_CALLBACK (rafesia_quit),NULL);
+	g_signal_connect (GTK_OBJECT (media_fixed), "size-allocate", G_CALLBACK (rf_main_window_size), mmod);
 	
 	g_signal_connect (GTK_OBJECT (menuFilm_play), "activate", G_CALLBACK (rf_media_play), mmod);
 	gtk_widget_add_accelerator (menuFilm_play, "activate", accel_group, GDK_space, 0, GTK_ACCEL_VISIBLE);
@@ -688,4 +792,3 @@ rf_interface_main_window_create (MediaModule *mmod) {
 	return (window);
 
 }
-
