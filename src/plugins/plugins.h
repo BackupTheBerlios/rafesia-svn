@@ -50,20 +50,22 @@ struct _ModuleInfo {
 
 typedef struct _MediaModule MediaModule;
 struct _MediaModule {
-	void                    *widget;
+	void                          *widget;
 	
-	GModule                 *module;
-	gchar                   *filename;
-	ModuleInfo              *info;
+	GModule                       *module;
+	gchar                         *filename;
+	ModuleInfo                    *info;
 
-	gint (*open_mrl)        (MediaModule *module, gchar *mrl);
-	gint (*play)            (MediaModule *module);
-	gint (*stop)            (MediaModule *module);
-	gint (*pause)           (MediaModule *module);
-	gint (*go)              (MediaModule *module, gint pos_stream, gint pos_time, gboolean actual);
-	gint (*get_position)    (MediaModule *module, gint *pos_stream, gint *pos_time, gint *time);
-	gint (*get_status)      (MediaModule *module);
-	gint (*event_init)      (void *mwidget, void (*media_event_cb)(gint event));
+	gint (*open_mrl)             (MediaModule *module, gchar *mrl);
+	gint (*play)                 (MediaModule *module);
+	gint (*stop)                 (MediaModule *module);
+	gint (*pause)                (MediaModule *module);
+	gint (*go)                   (MediaModule *module, gint pos_stream, gint pos_time, gboolean actual);
+	gint (*get_position)         (MediaModule *module, gint *pos_stream, gint *pos_time, gint *time);
+	gint (*get_status)           (MediaModule *module);
+	gint (*event_init)           (void *mwidget, void (*media_event_cb)(gint event));
+	void (*set_fullscreen)       (MediaModule *module, gint fullscreen);
+	gboolean (*is_fullscreen)    (MediaModule *module);
 };
 
 MediaModule *rf_module_media_load (gchar *path, gchar *file);

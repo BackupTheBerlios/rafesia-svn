@@ -122,7 +122,7 @@ rf_module_media_load_from_file (gchar *filename) {
 	g_module_symbol (mmod->module, "event_init", (gpointer *)&(mmod->event_init));
 	if (mmod->event_init == NULL)
 		mmod->event_init = (void *)rf_module_null_cb;
-
+	
 	return (mmod);
 	
 }

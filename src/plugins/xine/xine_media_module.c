@@ -108,6 +108,7 @@ get_status (MediaModule *module) {
 	}
 	return (-1);
 }
+
 void
 xine_event_cb (void *user_data, const xine_event_t *event) {
 	void     (*media_event_cb)(gint event);

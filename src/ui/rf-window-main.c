@@ -33,6 +33,9 @@ GtkWidget          *imagePlay;
 static gint         step = 5000;            // step in miliseconds
 static int          no_recursion;
 
+GtkWidget          *window;
+gboolean            fullscreen;
+
 void
 rf_interface_labelplaying_update (gchar *mrl) {
 
@@ -159,6 +162,20 @@ rf_media_go_forward (GtkButton *button, MediaModule *mmod) {
 	
 }
 
+gboolean
+rf_fullscreen (GtkWidget *widget, MediaModule *mmod) { 
+	
+	if (fullscreen) {
+		gtk_window_unfullscreen (GTK_WINDOW (window) );
+		fullscreen = FALSE;
+	} else {
+		gtk_window_fullscreen ( GTK_WINDOW (window) );
+		fullscreen = TRUE;
+	}
+	
+	return fullscreen;
+
+}
 
 gboolean
 rf_file_open_cb (GtkWidget *widget, GdkEvent *event) {
@@ -175,7 +192,6 @@ rf_file_open_cb (GtkWidget *widget, GdkEvent *event) {
 		gchar *filename;
 
 		filename = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (dialog));
-		g_printf("filechooser open: %s\n", filename);
 		
 		rf_media_open_mrl(filename, (MediaModule *)get_mediamodule());
 		rf_interface_labelplaying_update (filename);
@@ -223,18 +239,22 @@ get_mediamodule (void) {
 GtkWidget *
 rf_interface_main_window_create (MediaModule *mmod) {
 
-	GtkWidget        *window;
+	
 	GtkWidget        *vbox1;
 
 	GtkWidget        *menubar;
-	GtkWidget        *menuitem_film;
+	GtkWidget        *menuitem_rafesia;
 	GtkWidget        *menu1;
 	GtkWidget        *menuitem_help;
 	GtkWidget        *help1;
-
-	GtkWidget        *menuFilm_open;
+	GtkWidget        *menuitem_film;
+	GtkWidget        *menu_film;
+	
+	
+	GtkWidget        *menuFilm_fullscreen;
+	GtkWidget        *menuRafesia_open;
 	GtkWidget        *menuSeparator;
-	GtkWidget        *menuFilm_quit;
+	GtkWidget        *menuRafesia_quit;
 
 	GtkWidget        *menuHelp_about;
 	
@@ -279,14 +299,21 @@ rf_interface_main_window_create (MediaModule *mmod) {
 	gtk_widget_show (menubar);
 	gtk_box_pack_start (GTK_BOX (vbox1), menubar, FALSE, FALSE, 0);
 
+	menuitem_rafesia = gtk_menu_item_new_with_mnemonic ("Rafesia");
+	gtk_widget_show (menuitem_rafesia);
+	gtk_container_add (GTK_CONTAINER (menubar), menuitem_rafesia);
+
+	menu1 = gtk_menu_new ();
+	gtk_menu_item_set_submenu (GTK_MENU_ITEM (menuitem_rafesia), menu1);
+
+
 	menuitem_film = gtk_menu_item_new_with_mnemonic ("Film");
 	gtk_widget_show (menuitem_film);
 	gtk_container_add (GTK_CONTAINER (menubar), menuitem_film);
 
-	menu1 = gtk_menu_new ();
-	gtk_menu_item_set_submenu (GTK_MENU_ITEM (menuitem_film), menu1);
-
-	
+	menu_film = gtk_menu_new();
+	gtk_menu_item_set_submenu (GTK_MENU_ITEM (menuitem_film), menu_film);
+		
 	
 	menuitem_help = gtk_menu_item_new_with_mnemonic ("Help");
 	gtk_widget_show (menuitem_help);
@@ -298,21 +325,24 @@ rf_interface_main_window_create (MediaModule *mmod) {
 	menuHelp_about = gtk_image_menu_item_new_from_stock ("gtk-about", accel_group);
 	gtk_widget_show (menuHelp_about);
 	gtk_container_add (GTK_CONTAINER (help1), menuHelp_about);
-
-
-	menuFilm_open = gtk_image_menu_item_new_from_stock ("gtk-open", accel_group);
-	gtk_widget_show (menuFilm_open);
-	gtk_container_add (GTK_CONTAINER (menu1), menuFilm_open);
+	
+	menuRafesia_open = gtk_image_menu_item_new_from_stock ("gtk-open", accel_group);
+	gtk_widget_show (menuRafesia_open);
+	gtk_container_add (GTK_CONTAINER (menu1), menuRafesia_open);
 
 	menuSeparator = gtk_separator_menu_item_new ();
 	gtk_widget_show (menuSeparator);
 	gtk_container_add (GTK_CONTAINER (menu1), menuSeparator);
 	gtk_widget_set_sensitive (menuSeparator, FALSE);
 
-	menuFilm_quit = gtk_image_menu_item_new_from_stock ("gtk-quit", accel_group);
-	gtk_widget_show (menuFilm_quit);
-	gtk_container_add (GTK_CONTAINER (menu1), menuFilm_quit);
+	menuRafesia_quit = gtk_image_menu_item_new_from_stock ("gtk-quit", accel_group);
+	gtk_widget_show (menuRafesia_quit);
+	gtk_container_add (GTK_CONTAINER (menu1), menuRafesia_quit);
 
+	menuFilm_fullscreen =gtk_image_menu_item_new_with_label ("Fullscreen");
+	gtk_widget_show (menuFilm_fullscreen);
+	gtk_container_add (GTK_CONTAINER (menu_film), menuFilm_fullscreen);
+	
 	if ( mmod->widget != NULL)
 		gtk_container_add (GTK_CONTAINER (vbox1), mmod->widget);
 
@@ -409,9 +439,10 @@ rf_interface_main_window_create (MediaModule *mmod) {
 	g_signal_connect (GTK_OBJECT (window), "delete_event", G_CALLBACK (rafesia_quit),NULL);
 	g_signal_connect (GTK_OBJECT (window), "destroy_event", G_CALLBACK (rafesia_quit),NULL);
 	
-	g_signal_connect (GTK_OBJECT (menuFilm_quit), "activate", G_CALLBACK (rafesia_quit), NULL);
-	g_signal_connect (GTK_OBJECT (menuFilm_open), "activate", G_CALLBACK (rf_file_open_cb), NULL);
-
+	g_signal_connect (GTK_OBJECT (menuFilm_fullscreen), "activate", G_CALLBACK (rf_fullscreen), mmod);
+	g_signal_connect (GTK_OBJECT (menuRafesia_open), "activate", G_CALLBACK (rf_file_open_cb), NULL);
+	g_signal_connect (GTK_OBJECT (menuRafesia_quit), "activate", G_CALLBACK (rafesia_quit), NULL);
+	
 	g_signal_connect (GTK_OBJECT (menuHelp_about), "activate", G_CALLBACK (rf_window_aboutbox_cb), NULL);
 	
 	g_signal_connect (GTK_OBJECT (buttonPlay), "button-release-event", G_CALLBACK (rf_media_play), mmod);

@@ -9,65 +9,6 @@
 
 static GtkWidgetClass     *parent_class = NULL;
 
-static void* xine_thread (void *this_gen) {
-	RfMediaXine    *this   = (RfMediaXine *) this_gen;
-
-
-	while (1) {
-
-
-	XEvent event;
-	XNextEvent (gdk_x11_get_default_xdisplay(), &event);
-
-	//GdkEvent *event;
-	//event =  gdk_get_event();
-	//gdk_event_get_graphics_expose(this->video_window);
-	
-	switch (event.type) {
-		case Expose:
-			if (event.xexpose.count != 0)
-				break;
-			xine_gui_send_vo_data (this->stream, XINE_GUI_SEND_EXPOSE_EVENT, &event);
-			break;
-	}
-
-	//if (event.type == this->completion_event)
-	//	xine_gui_send_vo_data (this->stream, XINE_GUI_SEND_COMPLETION_EVENT, &event);
-
-	}
-
-	return NULL;
-}
-
-/*gpointer
-xine_thread (gpointer data) {
-
-	RfMediaXine      *rmx = (RfMediaXine *) data;
-	GdkEvent         *event;
-
-	while (1) {
-	
-		event = gdk_event_get();
-		
-		if (event != NULL) {
-			g_printf("event: %d\n", event->type);
-		
-			switch (event->type) {
-				case GDK_EXPOSE:
-					g_printf("jestem... haha\n");
-					//xine_gui_send_gui_data (rmx->stream, XINE_GUI_SEND_EXPOSE_EVENT, &event);
-					break;
-			}
-		//	xine_gui_send_vo_data (rmx->stream, XINE_GUI_SEND_EXPOSE_EVENT, &event);
-
-			gdk_event_free(event);
-		}
-	}
-	
-	return NULL;
-	
-}*/
-
 static gint 
 rf_media_xine_expose (GtkWidget *widget, GdkEventExpose *event, gpointer user_data) {
 	
@@ -127,39 +68,6 @@ frame_output_cb(void *data, int video_width, int video_height, double video_pixe
 	
 }
 
-static gboolean
-configure_cb (GtkWidget *widget, GdkEventConfigure *event, RfMediaXine *rmx) {
-
-	//rmx->priv->xpos = event->x + GTK_WIDGET (rmx)->allocation.x;
-	//mx->priv->ypos = event->y + GTK_WIDGET (rmx)->allocation.y;
-	
-	gdk_window_resize(rmx->video_window, event->x, event->y);
-	g_printf("conf\n");
-	return FALSE;
-	
-}
-
-/*static void
-size_changed_cb (GdkScreen *screen, BaconVideoWidget *bvw)
-{
-	double res_h, res_v;
-
-	XLockDisplay (bvw->priv->display);
-	res_h = (DisplayWidth (bvw->priv->display, bvw->priv->screen) * 1000 /
-			DisplayWidthMM (bvw->priv->display,
-				bvw->priv->screen));
-	res_v = (DisplayHeight (bvw->priv->display, bvw->priv->screen) * 1000 /
-			DisplayHeightMM (bvw->priv->display,
-				bvw->priv->screen));
-	XUnlockDisplay (bvw->priv->display);
-
-	bvw->priv->display_ratio = res_v / res_h;
-
-	if (fabs (bvw->priv->display_ratio - 1.0) < 0.01) {
-		bvw->priv->display_ratio = 1.0;
-	}
-}*/
-
 static void 
 rf_media_xine_realize (GtkWidget *widget) {
 
@@ -189,14 +97,6 @@ rf_media_xine_realize (GtkWidget *widget) {
 	this->vis.frame_output_cb    = frame_output_cb;
 	this->vis.user_data          = widget;
 	
-	/*if (!XInitThreads ()) {
-	
-		g_printf ("rf-media-xine: XInitThreads failed - looks like you don't have a thread-safe xlib.\n");
-		
-		return ;
-		
-	}*/
-
 	this->vo_port = xine_open_video_driver(this->xine, this->vo_driver, XINE_VISUAL_TYPE_X11, (void *)&(this->vis));
 	this->ao_port = xine_open_audio_driver(this->xine , this->ao_driver, NULL);
 
@@ -209,19 +109,12 @@ rf_media_xine_realize (GtkWidget *widget) {
 	}
 
 	this->stream = xine_stream_new(this->xine, this->ao_port, this->vo_port);
-
-	/* track configure events of toplevel window */
-	//g_signal_connect (G_OBJECT (gtk_widget_get_toplevel (widget)), "configure-event", G_CALLBACK (configure_cb), this);
+	
+	this->fullscreen = FALSE;
+	
 	g_signal_connect_after (G_OBJECT (gtk_widget_get_toplevel (widget)), "expose-event", G_CALLBACK (rf_media_xine_expose), this);
-	//g_signal_connect (G_OBJECT (widget), "expose-event", G_CALLBACK (rf_media_xine_expose), this); 
-	
-	/* get screen size changes */
-	//g_signal_connect (G_OBJECT (gdk_screen_get_default ()), "size-changed", G_CALLBACK (size_changed_cb), this);
-	
-	gtk_widget_set_events ( (GtkWidget *)this, GDK_EXPOSURE_MASK);
 	GTK_WIDGET_SET_FLAGS (widget, GTK_REALIZED);
 
-	//g_thread_create (xine_thread, this, FALSE, NULL);
 	return ;
 
 }
