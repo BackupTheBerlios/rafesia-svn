@@ -33,11 +33,12 @@ rf_widget_get (gchar *name) {
 	GSList *lista = widgets_list;
 
 	while (lista != NULL) {
+	
 		gchar *wname;
 		
 		wname = g_object_get_data (G_OBJECT(lista->data), "rf_widget_name");
 		
-		if ( g_ascii_strcasecmp (name, wname) == 0 )
+		if (g_ascii_strcasecmp (name, wname) == 0)
 			return (GtkWidget *)lista->data;
 
 		lista = g_slist_next (lista);
@@ -53,7 +54,7 @@ rf_widget_remove (gchar *name) {
 	
 	GtkWidget *widget = rf_widget_get (name);
 
-	if ( widget == NULL) 
+	if (widget == NULL) 
 		return FALSE;
 		
 	widgets_list = g_slist_remove (widgets_list, widget);
@@ -65,10 +66,10 @@ rf_widget_remove (gchar *name) {
 gboolean
 rf_widget_add (GtkWidget *widget, gchar *name) {
 
-	if ( rf_widget_get (name) != NULL )
+	if (rf_widget_get (name) != NULL)
 		return FALSE;
 	
-	g_object_set_data ( G_OBJECT (widget), "rf_widget_name", name );
+	g_object_set_data (G_OBJECT (widget), "rf_widget_name", name);
 	widgets_list = g_slist_append (widgets_list, widget);
 	
 	return TRUE;
@@ -79,7 +80,7 @@ void
 scr_init (void) {
 	
 	g_printf ("Rafesia - movie player v%s\n"
-	"(c) 2004 by Rafesia Team.\n\n", VERSION);
+		"(c) 2004 by Rafesia Team.\n\n", VERSION);
 	
 }
 

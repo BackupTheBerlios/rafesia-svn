@@ -55,7 +55,7 @@ rf_media_xine_instance_init (GTypeInstance *instance, gpointer g_class) {
 	this->vo_port                   = NULL;
 	this->ao_port                   = NULL;
 
-xine_init (this->xine);	
+	xine_init (this->xine);	
 	
 }
 
@@ -66,7 +66,7 @@ dest_size_cb(void *data, int video_width, int video_height, double video_pixel_a
 	
 	*dest_width        = 320;
 	*dest_height       = 200;
-	*dest_pixel_aspect = gdk_screen_width()/gdk_screen_height();
+	*dest_pixel_aspect = gdk_screen_width () / gdk_screen_height ();
 
 }
 
@@ -90,10 +90,10 @@ rf_media_xine_realize (GtkWidget *widget) {
 
 	RfMediaXine         *this;
 
-	g_return_if_fail(widget != NULL);
-	g_return_if_fail(IS_RF_MEDIA_XINE(widget));
+	g_return_if_fail (widget != NULL);
+	g_return_if_fail (IS_RF_MEDIA_XINE(widget));
 
-	this = RF_MEDIA_XINE(widget);
+	this = RF_MEDIA_XINE (widget);
 
 	this->attributes.x           = 0;
 	this->attributes.y           = 0;
@@ -114,8 +114,8 @@ rf_media_xine_realize (GtkWidget *widget) {
 	this->vis.frame_output_cb    = frame_output_cb;
 	this->vis.user_data          = widget;
 	
-	this->vo_port = xine_open_video_driver(this->xine, this->vo_driver, XINE_VISUAL_TYPE_X11, (void *)&(this->vis));
-	this->ao_port = xine_open_audio_driver(this->xine , this->ao_driver, NULL);
+	this->vo_port = xine_open_video_driver (this->xine, this->vo_driver, XINE_VISUAL_TYPE_X11, (void *)&(this->vis));
+	this->ao_port = xine_open_audio_driver (this->xine , this->ao_driver, NULL);
 
 	if (!this->vo_port) {
 	
@@ -125,14 +125,14 @@ rf_media_xine_realize (GtkWidget *widget) {
 		
 	}
 
-	this->stream = xine_stream_new(this->xine, this->ao_port, this->vo_port);
+	this->stream = xine_stream_new (this->xine, this->ao_port, this->vo_port);
 	
 	this->fullscreen = FALSE;
-
+	
 	g_signal_connect_after (G_OBJECT (gtk_widget_get_toplevel (widget)), "expose-event", G_CALLBACK (rf_media_xine_expose), this);
 	GTK_WIDGET_SET_FLAGS (widget, GTK_REALIZED);
-
-	return ;
+	
+	return;
 
 }
 
@@ -148,25 +148,15 @@ rf_media_xine_size_allocate (GtkWidget *widget, GtkAllocation *allocation) {
 
 	widget->allocation = *allocation;
 
-	if (GTK_WIDGET_REALIZED (widget)) {
-	
-	  gdk_window_move_resize (widget->window,
-	            allocation->x,
-	            allocation->y,
-	            allocation->width,
-	            allocation->height);
-
-	}
+	if (GTK_WIDGET_REALIZED (widget))
+		gdk_window_move_resize (widget->window, allocation->x, allocation->y, allocation->width, allocation->height);
 	
 }
 
 static void 
 rf_media_xine_finalize (GObject *object) {
 
-	RfMediaXine *rmx = (RfMediaXine *) object;
-
 	G_OBJECT_CLASS (parent_class)->finalize (object);
-	//rmx = NULL;
 	
 }
 
@@ -248,9 +238,7 @@ GtkWidget *
 rf_media_xine_new (void) {
 	
 	GtkWidget *widget = GTK_WIDGET (g_object_new (rf_media_xine_get_type (), NULL));
-
-	g_object_set (widget, "events", GDK_ALL_EVENTS_MASK, NULL);
-	g_signal_connect (GTK_OBJECT (widget), "key-press-event", G_CALLBACK (rf_media_xine_key_press), NULL);
+	
 	g_signal_connect (GTK_OBJECT (widget), "expose-event", G_CALLBACK (rf_media_xine_expose),NULL);
 	
 	return widget;
