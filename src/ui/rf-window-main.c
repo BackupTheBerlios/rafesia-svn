@@ -61,7 +61,7 @@ rf_media_open_mrl (gchar *mrl, MediaModule *mmod) {
 	mmod->play (mmod);
 
 	if (img != NULL)
-		gtk_image_set_from_file (GTK_IMAGE (img), g_build_filename ("./images/", "pause.png", NULL));
+		gtk_image_set_from_stock (GTK_IMAGE (img), "gtk-media-pause", GTK_ICON_SIZE_BUTTON);
 
 	rf_interface_labelplaying_update (mrl);
 	
@@ -79,14 +79,14 @@ rf_media_play (GtkButton *button, MediaModule *mmod) {
 			mediamod->play(mediamod);
 
 			if (img != NULL)
-				gtk_image_set_from_file (GTK_IMAGE (img), g_build_filename ("./images/", "pause.png", NULL));
+				gtk_image_set_from_stock (GTK_IMAGE (img), "gtk-media-pause", GTK_ICON_SIZE_BUTTON);
 			
 			break;
 		case RF_STATUS_PLAY:
 			mediamod->pause(mediamod);
 			
 			if (img != NULL)
-				gtk_image_set_from_file(GTK_IMAGE (img), g_build_filename ("./images/", "play.png", NULL));
+				gtk_image_set_from_stock (GTK_IMAGE (img), "gtk-media-play", GTK_ICON_SIZE_BUTTON);
 			
 			break;
 	}
@@ -126,14 +126,14 @@ update_slider_cb (gpointer seek) {
 	if (mediamod->get_status (mediamod) != RF_STATUS_PLAY) {
 		
 		if (img != NULL)
-			gtk_image_set_from_file(GTK_IMAGE (img), g_build_filename ("./images/", "play.png", NULL));
+			gtk_image_set_from_stock (GTK_IMAGE (img), "gtk-media-play", GTK_ICON_SIZE_BUTTON);
 
 		return (TRUE);
 		
 	}
 	
-	if (img != NULL)
-		gtk_image_set_from_file(GTK_IMAGE (img), g_build_filename ("./images/", "pause.png", NULL));
+//	if (img != NULL)
+//		gtk_image_set_from_stock (GTK_IMAGE (img), "gtk-media-pause", GTK_ICON_SIZE_BUTTON);
 	
 	if (!mediamod->get_position (mediamod, &pos_stream, &pos_time, &length_time))
 		return (TRUE);
@@ -160,7 +160,7 @@ seek_cb (GtkWidget* widget, MediaModule *mmod) {
 	if (!no_recursion ) {
 		mmod->go (mmod, (gint) GTK_ADJUSTMENT(widget)->value, 0, 0); 
 		if (speed == RF_STATUS_PAUSE && img != NULL)
-			gtk_image_set_from_file (GTK_IMAGE (img), g_build_filename ("./images/", "pause.png", NULL));
+			gtk_image_set_from_stock (GTK_IMAGE (img), "gtk-media-pause", GTK_ICON_SIZE_BUTTON);
 	}
 	
 }
@@ -173,7 +173,7 @@ rf_media_go_backward (GtkButton *button, MediaModule *mmod) {
 	mmod->go (mmod, 0, 0-step, 1);
 	
 	if (img != NULL)
-		gtk_image_set_from_file (GTK_IMAGE (img), g_build_filename ("./images/", "pause.png", NULL));
+		gtk_image_set_from_stock (GTK_IMAGE (img), "gtk-media-pause", GTK_ICON_SIZE_BUTTON);
 	
 }
 
@@ -185,7 +185,7 @@ rf_media_go_forward (GtkButton *button, MediaModule *mmod) {
 	mmod->go (mmod, 0, step, 1);
 
 	if (img != NULL)
-		gtk_image_set_from_file (GTK_IMAGE (img), g_build_filename ("./images/", "pause.png", NULL));
+		gtk_image_set_from_stock (GTK_IMAGE (img), "gtk-media-pause", GTK_ICON_SIZE_BUTTON);
 	
 }
 
@@ -194,46 +194,46 @@ rf_fullscreen (GtkWidget *widget, MediaModule *mmod) {
 	
 	if (fullscreen) {
 	
-		GtkWidget *widget;
+		GtkWidget *widget2;
 		
-		widget = rf_widget_get ("rf menubar top");
-		if ( widget != NULL)
-			gtk_widget_show (widget);
+		widget2 = rf_widget_get ("rf menubar top");
+		if ( widget2 != NULL)
+			gtk_widget_show (widget2);
 		
-		widget = rf_widget_get ("rf box label");
-		if ( widget != NULL )
-			gtk_widget_show (widget);
+		widget2 = rf_widget_get ("rf box label");
+		if ( widget2 != NULL )
+			gtk_widget_show (widget2);
 		
-		widget = rf_widget_get ("rf box bottom");
-		if ( widget != NULL )
-			gtk_widget_show (widget);
+		widget2 = rf_widget_get ("rf box bottom");
+		if ( widget2 != NULL )
+			gtk_widget_show (widget2);
 		
-		widget = rf_widget_get ("rafesia main window");
-		if ( widget != NULL )
-			gtk_window_unfullscreen (GTK_WINDOW (widget));
+		widget2 = rf_widget_get ("rafesia main window");
+		if ( widget2 != NULL )
+			gtk_window_unfullscreen (GTK_WINDOW (widget2));
 	
 		fullscreen = FALSE;
 		
 	} else {
 	
-		GtkWidget *widget;
+		GtkWidget *widget2;
 		
 
-		widget = rf_widget_get ("rf menubar top");
-		if ( widget != NULL )
-			gtk_widget_hide (widget);
+		widget2 = rf_widget_get ("rf menubar top");
+		if ( widget2 != NULL )
+			gtk_widget_hide (widget2);
   
-		widget = rf_widget_get ("rf box label");
-		if ( widget != NULL )
-			gtk_widget_hide (widget);
+		widget2 = rf_widget_get ("rf box label");
+		if ( widget2 != NULL )
+			gtk_widget_hide (widget2);
 		
-		widget = rf_widget_get ("rf box bottom");
-		if ( widget != NULL )
-			gtk_widget_hide (widget);
+		widget2 = rf_widget_get ("rf box bottom");
+		if ( widget2 != NULL )
+			gtk_widget_hide (widget2);
 		
-		widget = rf_widget_get ("rafesia main window");
-		if ( widget !=NULL )
-			gtk_window_fullscreen (GTK_WINDOW (widget));
+		widget2 = rf_widget_get ("rafesia main window");
+		if ( widget2 !=NULL )
+			gtk_window_fullscreen (GTK_WINDOW (widget2));
 		
 		fullscreen = TRUE;
 		
@@ -320,7 +320,7 @@ rf_media_widget_motion_event (GtkWidget *widget, GdkEventMotion *event, gpointer
 		y = event->y;
 		
 		if ( box != NULL || box_label != NULL) {
-			gint wy = gdk_screen_height () - box->allocation.height - box_label->allocation.height;
+			gint wy = gdk_screen_height () - (box->allocation.height + box_label->allocation.height);
 			
 			if (GTK_WIDGET_VISIBLE (box)) {
 				if (wy > y) {
@@ -354,6 +354,67 @@ rf_media_widget_key_press_event (GtkWidget *widget, GdkEventKey *event, gpointer
 	
 	gtk_widget_event (GTK_WIDGET (user_data), &eventk);
 	
+}
+
+gboolean
+rf_media_widget_button_press_event (GtkWidget *widget, GdkEventButton *event, gpointer user_data) {
+	
+	if (event->type == GDK_2BUTTON_PRESS && event->button == 1)
+			rf_fullscreen (NULL, NULL);
+		
+}
+
+gboolean
+rf_media_widget_event (GtkWidget *widget, GdkEvent *event, gpointer user_data) {
+
+	switch (event->type) {
+		case (GDK_SCROLL): {
+			switch (event->scroll.direction) {
+				case (GDK_SCROLL_UP): rf_media_go_forward (NULL, get_mediamodule ()); break;
+				case (GDK_SCROLL_DOWN): rf_media_go_backward (NULL, get_mediamodule ()); break;
+				case (GDK_MOTION_NOTIFY): {
+						g_printf ("GDK_MOTION_NOTIFY x: %f y: %f [xroot: %f, yroot: %f]\n", event->motion.x, event->motion.y, event->motion.x_root, event->motion.y_root);
+						break;
+
+				}
+			}
+		}
+		case (GDK_NOTHING): g_printf ("GDK_NOTHING\n"); break;
+		case (GDK_DELETE): g_printf ("GDK_DELETE\n"); break;
+		case (GDK_DESTROY): g_printf ("GDK_DESTROY\n"); break;
+		case (GDK_EXPOSE): g_printf ("GDK_EXPOSE\n"); break;
+		case (GDK_BUTTON_PRESS): g_printf ("GDK_BUTTON_PRESS\n"); break;
+		case (GDK_2BUTTON_PRESS): g_printf ("GDK_2BUTTON_PRESS\n"); break;
+		case (GDK_3BUTTON_PRESS): g_printf ("GDK_3BUTTON_PRESS\n"); break;
+		case (GDK_BUTTON_RELEASE): g_printf ("GDK_BUTTON_RELEASE\n"); break;
+		case (GDK_KEY_PRESS): g_printf ("GDK_KEY_PRESS\n"); break;
+		case (GDK_KEY_RELEASE): g_printf ("GDK_KEY_RELEASE\n"); break;
+		case (GDK_ENTER_NOTIFY): g_printf ("GDK_ENTER_NOTIFY\n"); break;
+		case (GDK_LEAVE_NOTIFY): g_printf ("GDK_LEAVE_NOTIFY\n"); break;
+		case (GDK_FOCUS_CHANGE): g_printf ("GDK_FOCUS_CHANGE\n"); break;
+		case (GDK_CONFIGURE): g_printf ("GDK_CONFIGURE\n"); break;
+		case (GDK_MAP): g_printf ("GDK_MAP\n"); break;
+		case (GDK_UNMAP): g_printf ("GDK_UNMAP\n"); break;
+		case (GDK_PROPERTY_NOTIFY): g_printf ("GDK_PROPERTY_NOTIFY\n"); break;
+		case (GDK_SELECTION_CLEAR): g_printf ("GDK_SELECTION_CLEAR\n"); break;
+		case (GDK_SELECTION_REQUEST): g_printf ("GDK_SELECTION_REQUEST\n"); break;
+		case (GDK_SELECTION_NOTIFY): g_printf ("GDK_SELECTION_NOTIFY\n"); break;
+		case (GDK_PROXIMITY_IN): g_printf ("GDK_PROXIMITY_IN\n"); break;
+		case (GDK_PROXIMITY_OUT): g_printf ("GDK_PROXIMITY_OUT\n"); break;
+		case (GDK_DRAG_MOTION): g_printf ("GDK_DRAG_MOTION\n"); break;
+		case (GDK_DRAG_LEAVE): g_printf ("GDK_DRAG_LEAVE\n"); break;
+		case (GDK_DRAG_STATUS): g_printf ("GDK_DRAG_STATUS\n"); break;
+		case (GDK_DROP_START): g_printf ("GDK_DROP_START\n"); break;
+		case (GDK_DROP_FINISHED): g_printf ("GDK_DROP_FINISHED\n"); break;
+		case (GDK_CLIENT_EVENT): g_printf ("GDK_CLIENT_EVENT\n"); break;
+		case (GDK_VISIBILITY_NOTIFY): g_printf ("GDK_VISIBILITY_NOTIFY\n"); break;
+		case (GDK_NO_EXPOSE): g_printf ("GDK_NO_EXPOSE\n"); break;
+		case (GDK_WINDOW_STATE): g_printf ("GDK_WINDOW_STATE\n"); break;
+		case (GDK_SETTING): g_printf ("GDK_SETTING\n"); break;
+	
+	}
+
+	return (TRUE); 
 }
 
 GtkWidget *
@@ -495,7 +556,10 @@ rf_interface_main_window_create (MediaModule *mmod) {
 		gtk_container_add (GTK_CONTAINER (vbox1), mmod->widget);
 		rf_widget_add (mmod->widget, "rf media widget");
 		g_signal_connect (G_OBJECT (mmod->widget), "motion-notify-event", G_CALLBACK (rf_media_widget_motion_event), NULL);
-		g_signal_connect (G_OBJECT (mmod->widget), "key-press-event", G_CALLBACK (rf_media_widget_key_press_event), window);	
+		g_signal_connect (G_OBJECT (mmod->widget), "key-press-event", G_CALLBACK (rf_media_widget_key_press_event), window);
+		g_signal_connect (G_OBJECT (mmod->widget), "button-press-event", G_CALLBACK (rf_media_widget_button_press_event), NULL);
+		// g_signal_connect (G_OBJECT (mmod->widget), "event", G_CALLBACK (rf_media_widget_event), NULL);
+		// ?? g_signal_connect (G_OBJECT (mmod->widget), "can-activate-accel", G_CALLBACK (rf_media_widget_activate_accel), NULL);
 	
 	}
 
@@ -546,8 +610,8 @@ rf_interface_main_window_create (MediaModule *mmod) {
 	buttonBack = gtk_button_new ();
 	gtk_widget_show (buttonBack);
 	gtk_container_add (GTK_CONTAINER (alignmentBack), buttonBack);
-
-	imageBack = gtk_image_new_from_file(g_build_filename("./images/", "rew.png", NULL));
+	
+	imageBack = gtk_image_new_from_stock ("gtk-media-rewind", GTK_ICON_SIZE_BUTTON);
 	gtk_widget_show (imageBack);
 	gtk_container_add (GTK_CONTAINER (buttonBack), imageBack);
 
@@ -556,7 +620,7 @@ rf_interface_main_window_create (MediaModule *mmod) {
 	gtk_widget_show (buttonPlay);
 	gtk_box_pack_start (GTK_BOX (hbox2), buttonPlay, FALSE, FALSE, 0);
 
-	imagePlay = gtk_image_new_from_file(g_build_filename("./images/", "play.png", NULL));
+	imagePlay = gtk_image_new_from_stock ("gtk-media-play", GTK_ICON_SIZE_BUTTON);
 	gtk_widget_show (imagePlay);
 	gtk_container_add (GTK_CONTAINER (buttonPlay), imagePlay);
 	gtk_misc_set_padding (GTK_MISC (imagePlay), 6, 6);
@@ -571,7 +635,7 @@ rf_interface_main_window_create (MediaModule *mmod) {
 	gtk_widget_show (buttonForward);
 	gtk_container_add (GTK_CONTAINER (alignmentForward), buttonForward);
 
-	imageForward = gtk_image_new_from_file(g_build_filename("./images/", "fov.png", NULL));
+	imageForward = gtk_image_new_from_stock ("gtk-media-forward", GTK_ICON_SIZE_BUTTON);
 	gtk_widget_show (imageForward);
 	gtk_container_add (GTK_CONTAINER (buttonForward), imageForward);
 
