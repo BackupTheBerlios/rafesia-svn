@@ -1,7 +1,10 @@
 #include <gtk/gtk.h>
 #include "rf-media-mplayer.h"
 
+#include <gdk/gdkkeysyms.h>
+
 #include <stdlib.h>
+#include <unistd.h>
 #include <gdk/gdkx.h>
 #include <errno.h>
 #include <sys/types.h>
@@ -33,102 +36,64 @@ rf_media_mplayer_is_running (GtkWidget *widget) {
 gint
 rf_media_mplayer_launch (GtkWidget *widget) {
 	
-	gint                pid, status;
+	gint                i;
 	extern char       **environ;
 	gchar              *command;
 	RfMediaMplayer     *rmm = RF_MEDIA_MPLAYER (widget);
+	gchar              *argv[11];
 	
-	if (pipe (rmm->pipe_input) != 0)
-		g_printf ("input pipe error\n");
-
-	if (pipe (rmm->pipe_output) != 0)
-		g_printf ("output pipe error\n");
+	argv[0] = g_strdup ("mplayer");
+	argv[1] = g_strdup ("-identify");
+	argv[2] = g_strdup ("-vo");
+	argv[3] = g_strdup ("xv");
+	argv[4] = g_strdup ("-slave");
+	argv[5] = g_strdup ("-osdlevel");
+	argv[6] = g_strdup ("0");
+	argv[7] = g_strdup ("-nolirc");
+	argv[8] = g_strdup ("-wid");
+	argv[9] = g_strdup_printf ("%d", GDK_WINDOW_XWINDOW (widget->window));
+	argv[10] = g_strdup_printf ("%s", rmm->file);
+	argv[11] = '\0';
 	
-	command = g_strdup_printf ("mplayer -identify -vo xv -slave -osdlevel 0 -nolirc -noautosub -nograbpointer -nokeepaspect -nomouseinput -noconsolecontrols -wid %d \"%s\" 2> /dev/null &", GDK_WINDOW_XWINDOW (widget->window),rmm->file);
-	
-	if (command == 0)
-		return 1;
-	
-	pid = fork();
-	if (pid == -1)
+	if (!g_spawn_async_with_pipes (NULL, argv, NULL, G_SPAWN_SEARCH_PATH | G_SPAWN_STDERR_TO_DEV_NULL, NULL, NULL, &(rmm->mp_pid), &(rmm->mp_in), &(rmm->mp_out), NULL, NULL))
 		return -1;
 	
-	if (pid == 0) {
+	for (i=0; i<11; i++)
+		g_free (argv[i]);
+
+	
+	rmm->channel_output   = g_io_channel_unix_new (rmm->mp_out);
+	rmm->stream_input     = fdopen (rmm->mp_in, "w");
+	rmm->channel_input    = g_io_channel_unix_new (rmm->mp_in);
+			
+	rmm->width            = 0;
+	rmm->height           = 0;
+	rmm->length           = 0;
+	
+	while ((rmm->width == 0) || (rmm->length == 0) || (rmm->height == 0)) {
 		
-		gchar *argv[4];
+		gchar         *buffer;
+				
+		g_io_channel_read_line (rmm->channel_output, &buffer, NULL, NULL, NULL);
+				
+		if (buffer == NULL)
+			continue;
+
+		if (g_str_has_prefix (buffer, "ID_VIDEO_WIDTH="))
+			sscanf (buffer+15, "%i", &(rmm->width));
 		
-		argv[0] = "sh";
-		argv[1] = "-c";
-		argv[2] = g_strdup (command);
-		argv[3] = 0;
-		
-		close (rmm->pipe_input[1]);
-		close (rmm->pipe_output[0]);
-		if (dup2 (rmm->pipe_input[0], 0) != 0)
-			g_fprintf (stderr, "input dup error\n");
-		
-		if (dup2 (rmm->pipe_output[1], 1) != 0)
-			g_fprintf (stderr, "output dup error\n");
-		
-		execve ("/bin/sh", argv, environ);
-		exit (127);
-		
-		g_free (argv[0]);
-		g_free (argv[1]);
-		g_free (argv[2]);
-		g_free (argv[3]);
-		
+		if (g_str_has_prefix (buffer, "ID_VIDEO_HEIGHT="))
+			sscanf (buffer+16, "%i", &(rmm->height));
+
+		if (g_str_has_prefix (buffer, "ID_LENGTH="))
+			sscanf (buffer+10, "%i", &(rmm->length));
+				
+		g_free (buffer);
 	}
-	
-	g_free (command);
-	
-	while (1) {
-		
-		if (waitpid (pid, &status, 0) == -1) {
+	gtk_widget_set_size_request (GTK_WIDGET (rmm), rmm->width, rmm->height);
 			
-			if (errno != EINTR)
-				return -1;
-			
-		} else {
-			
-			rmm->channel_output = g_io_channel_unix_new (rmm->pipe_output[0]);
-			rmm->channel_input = g_io_channel_unix_new (rmm->pipe_input[1]);
-			rmm->mp_pid = pid + 1;
-			
-			rmm->width = 0;
-			rmm->height = 0;
-			rmm->length = 0;
-	
-			while ( (rmm->width == 0) || (rmm->length == 0) || (rmm->height == 0)) {
-		
-				gchar *buffer;
-				GIOStatus status;
-				GError *error = NULL;
-		
-				g_io_channel_read_line (rmm->channel_output, &buffer, NULL, NULL, &error);
-		
-				if (g_str_has_prefix (buffer, "ID_VIDEO_WIDTH=")) {
-					sscanf (buffer+15, "%i", &(rmm->width));
-					continue;
-				}
-		
-				if (g_str_has_prefix (buffer, "ID_VIDEO_HEIGHT=")) {
-					sscanf (buffer+16, "%i", &(rmm->height));
-					continue;
-				}
+	return 0;
 
-				if (g_str_has_prefix (buffer, "ID_LENGTH=")) {
-					sscanf (buffer+10, "%i", &(rmm->length));
-					continue;
-				}
-			}
-			
-			gtk_widget_set_size_request (GTK_WIDGET (rmm), rmm->width, rmm->height);
-			
-			return status;
-		}
-
-	} 
 }
 
 void
@@ -178,11 +143,29 @@ rf_media_mplayer_restart (GtkWidget *widget) {
 
 }
 
+gpointer
+rf_media_mplayer_event_thread (gpointer data) {
+
+	RfMediaMplayer    *rmm = RF_MEDIA_MPLAYER (data);
+	GtkWidget         *widget = GTK_WIDGET (data);
+	XEvent             report;
+	
+	while (1)
+		if (XCheckWindowEvent (GDK_WINDOW_XDISPLAY (widget->window), GDK_WINDOW_XID (widget->window), KeyPressMask, &report)) {
+			
+			report.xany.window = GDK_WINDOW_XID (widget->window);
+			report.xkey.window = GDK_WINDOW_XID (widget->window);
+			
+			//XSendEvent (GDK_WINDOW_XDISPLAY (widget->window), GDK_WINDOW_XID (widget->window), False, SubstructureRedirectMask, &report);
+			g_printf ("\t>> wcisnieto klawisz <<\n");
+
+		}
+}
+
 void
-rf_media_mplayer_play (GtkWidget *widget, gchar *file) {
+rf_media_mplayer_open (GtkWidget *widget, gchar *file) {
 	
 	gint            pid;
-	GError         *error;
 
 	g_return_if_fail (widget != NULL);
 	g_return_if_fail (IS_RF_MEDIA_MPLAYER (widget));
@@ -191,22 +174,23 @@ rf_media_mplayer_play (GtkWidget *widget, gchar *file) {
 	
 	rmm->file = g_strdup (file);
 	pid = rf_media_mplayer_launch (GTK_WIDGET (widget));
+
 	rmm->timer = 0;
 	rmm->ready = FALSE;
+	
 	//g_timeout_add (100, rf_media_mplayer_timeout, rmm);
 	g_io_add_watch (rmm->channel_output, G_IO_IN, rf_media_mplayer_output_lookup, rmm);
 	
+	
+	//GThread *mplayer_thread = NULL;
+
+	//mplayer_thread = g_thread_create (rf_media_mplayer_event_thread, rmm, FALSE, NULL);
 }
 
 gboolean
 rf_media_mplayer_output_lookup (GIOChannel *source, GIOCondition condition, gpointer data) {
 
 	RfMediaMplayer  *rmm;
-	gchar           *path;
-	gchar           *buffor;
-	FILE            *fp;
-	GIOStatus        status;
-	GError          *error = NULL;
 	FILE            *stream;
 	gint             i = 0;
 	gchar            buffer[1024];
@@ -216,20 +200,21 @@ rf_media_mplayer_output_lookup (GIOChannel *source, GIOCondition condition, gpoi
 	
 	rmm = RF_MEDIA_MPLAYER (data);
 	
-	stream = fdopen (rmm->pipe_output[0], "r");
+	stream = fdopen (rmm->mp_out, "r");
+	fflush (stream);
 	buffer[0] = fgetc (stream);
-	
+		
 	while ((buffer[i] != 0x0D) && (buffer[i] != '\n') && (i < 1024) && (buffer[i] != '\0')) {
 		i++;
 		buffer[i] = fgetc (stream);
 	}
 
-	fflush (stream);
 	buffer[i] = '\0';
 
+	if (buffer != NULL)
 	if (g_str_has_prefix (buffer, "A:"))
 		sscanf (buffer + 2, "%d.", &(rmm->timer));
-
+	
 	return TRUE;
 }
 
@@ -240,7 +225,6 @@ rf_media_mplayer_timeout (gpointer data) {
 	gchar           *path;
 	FILE            *fp;
 	gint             i = 0;
-	gchar            buffer[1024];	
 	
 	g_return_if_fail (data != NULL);
 	g_return_if_fail (IS_RF_MEDIA_MPLAYER (data));
@@ -257,20 +241,6 @@ rf_media_mplayer_timeout (gpointer data) {
 		fclose (fp);
 	
 	g_free (path);
-
-	fp = fdopen (rmm->pipe_output[0], "r");
-	buffer[0] = fgetc (fp);
-	
-	while ((buffer[i] != 0x0D) && (buffer[i] != '\n') && (i < 1024) && (buffer[i] != '\0')) {
-		i++;
-		buffer[i] = fgetc (fp);
-	}
-
-	fflush (fp);
-	buffer[i] = '\0';
-
-	if (g_str_has_prefix (buffer, "A:"))
-		sscanf (buffer+2, "%d.", &(rmm->timer));
 
 	return TRUE;
 }
@@ -347,7 +317,7 @@ rf_media_mplayer_realize (GtkWidget *widget) {
 	gdk_window_set_user_data (widget->window, widget);
 
 	GTK_WIDGET_SET_FLAGS (widget, GTK_REALIZED);
-	gtk_widget_set_size_request (GTK_WIDGET (this), 320, 240);
+	gtk_widget_set_size_request (GTK_WIDGET (this), attributes.width, attributes.height);
 
 }
 
@@ -364,7 +334,7 @@ rf_media_mplayer_class_init (RfMediaMplayerClass *class) {
 	
 	widget_class->realize               = (void *) rf_media_mplayer_realize;
 	widget_class->size_allocate         = (void *) rf_media_mplayer_size_allocate;
-	widget_class->expose_event          = (void *) rf_media_mplayer_expose;
+	//widget_class->expose_event          = (void *) rf_media_mplayer_expose;
 
 }
 

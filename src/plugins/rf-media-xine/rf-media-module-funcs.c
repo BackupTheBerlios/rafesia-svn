@@ -164,19 +164,18 @@ event_init (void *ptr_media, void (*media_event_cb)(gint event)) {
 }
 
 ModuleInfo *
-get_module_info () {
-	ModuleInfo *info = g_new0 (ModuleInfo, 1);
-
-	rf_media_set_name (info, "Rafesia Media Module [XinE]");
-	rf_media_set_description (info, "Alpha phase xine plugin for rafesia 0.0.0");
+get_module_info (gint (*ModuleInfoFunc) (ModuleInfo *info, gchar *name, gchar *var)) {
 	
-	/* potem mozna to dokonczyc, nie jest to sprawa pierwszorzedna */
-	info->type = RF_MODULE_MEDIA;
-
-	info->author = g_strdup ("Lukasz 'pax' Zukowski");
-	info->required_version = g_strdup ("=0.0.0");
+	ModuleInfo *info = g_new0 (ModuleInfo, 1);
+	
+	ModuleInfoFunc (info, "name", "Rafesia Media Module [XinE]");
+	ModuleInfoFunc (info, "description", "Alpha phase xine plugin for rafesia 0.0.0");
+	ModuleInfoFunc (info, "author", "Luke 'pax' Zukowski");
+	ModuleInfoFunc (info, "required version", "=0.0.0");
+	ModuleInfoFunc (info, "type", RF_MODULE_MEDIA);	
 
 	return info;
+
 }
 
 gint

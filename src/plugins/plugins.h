@@ -69,6 +69,4 @@ struct _MediaModule {
 };
 
 MediaModule *rf_module_media_load (gchar *path, gchar *file);
-void rf_media_set_description (ModuleInfo *info, gchar *description);
-void rf_media_set_name (ModuleInfo *info, gchar *name);
 

@@ -25,7 +25,7 @@
 gint
 open (MediaModule *module, gchar *mrl) {
 
-	rf_media_mplayer_play (module->widget, mrl);
+	rf_media_mplayer_open (module->widget, mrl);
 	
 	return 0;
 
@@ -34,24 +34,24 @@ open (MediaModule *module, gchar *mrl) {
 gint 
 play (MediaModule *module) {
 	
-	//RfMediaXine     *media = RF_MEDIA_XINE (module->widget);
-	//gint             ps=0;
+	RfMediaMplayer *rmm;
 	
-	//xine_get_pos_length (media->stream, &ps, NULL, NULL);
-	//xine_play (media->stream, ps, 0);
-	//xine_set_param (media->stream, XINE_PARAM_SPEED, XINE_SPEED_NORMAL);
+	g_return_if_fail (module != NULL);
+	g_return_if_fail (module->widget != NULL);
+	g_return_if_fail (IS_RF_MEDIA_MPLAYER (module->widget));
+
+	rmm = RF_MEDIA_MPLAYER (module->widget);	
 	
-	return (0);
+	g_io_channel_write_chars (rmm->channel_input, "seek 0 0\n", -1, NULL, NULL);
+	g_io_channel_flush (rmm->channel_input, NULL);
+
+	return 0;
 	
 }
 
 gint 
 stop (MediaModule *module) {
 	
-	//RfMediaXine     *media = RF_MEDIA_XINE (module->widget);
-
-	//xine_stop (media->stream);
-
 	return 0;
 	
 }
@@ -59,9 +59,19 @@ stop (MediaModule *module) {
 gint
 rf_media_pause (MediaModule *module) {
 	
-	//RfMediaXine     *media = RF_MEDIA_XINE (module->widget);
+	RfMediaMplayer *rmm;
+	
+	g_return_if_fail (module != NULL);
+	g_return_if_fail (module->widget != NULL);
+	g_return_if_fail (IS_RF_MEDIA_MPLAYER (module->widget));
 
-	//xine_set_param (media->stream, XINE_PARAM_SPEED, XINE_SPEED_PAUSE);
+	rmm = RF_MEDIA_MPLAYER (module->widget);
+	
+	//fflush (rmm->stream_input);
+	//g_fprintf (rmm->stream_input, "pause\n");
+	
+	g_io_channel_write_chars (rmm->channel_input, "pause\n", -1, NULL, NULL);
+	g_io_channel_flush (rmm->channel_input, NULL);
 
 	return 0;
 	
@@ -90,6 +100,19 @@ go (MediaModule *module, gint pos_stream, gint pos_time, gboolean actual) {
 	}
 	
 	return (0);*/
+
+	RfMediaMplayer *rmm;
+	
+	g_return_if_fail (module != NULL);
+	g_return_if_fail (module->widget != NULL);
+	g_return_if_fail (IS_RF_MEDIA_MPLAYER (module->widget));
+
+	rmm = RF_MEDIA_MPLAYER (module->widget);
+	
+	//g_io_channel_write_chars (rmm->channel_input, "seek 5 0\n", -1, NULL, NULL);	
+	//g_io_channel_flush (rmm->channel_input, NULL);
+
+	return 0;
 	
 }
 
@@ -139,19 +162,16 @@ event_init (void *ptr_media, void (*media_event_cb)(gint event)) {
 }
 
 ModuleInfo *
-get_module_info () {
+get_module_info (gint (*ModuleInfoFunc) (ModuleInfo *info, gchar *name, gpointer var)) {
 	
 	ModuleInfo *info = g_new0 (ModuleInfo, 1);
 
-	rf_media_set_name (info, "Rafesia Media Module [MPlayer]");
-	rf_media_set_description (info, "Alpha phase mplayer plugin for rafesia 0.0.0");
+	ModuleInfoFunc (info, "name", "Rafesia Media Module [MPlayer]");
+	ModuleInfoFunc (info, "description", "Alpha phase mplayer plugin for rafesia 0.0.0");
+	ModuleInfoFunc (info, "author", "Luke 'pax' Zukowski");
+	ModuleInfoFunc (info, "required version", "=0.0.0");
+	ModuleInfoFunc (info, "type", RF_MODULE_MEDIA);
 	
-	/* potem mozna to dokonczyc, nie jest to sprawa pierwszorzedna */
-	info->type = RF_MODULE_MEDIA;
-
-	info->author = g_strdup ("Lukasz 'pax' Zukowski");
-	info->required_version = g_strdup ("=0.0.0");
-
 	return info;
 	
 }

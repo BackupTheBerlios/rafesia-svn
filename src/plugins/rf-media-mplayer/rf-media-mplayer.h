@@ -18,9 +18,10 @@ struct _RfMediaMplayer {
 	
 	gchar                      *file;
 	
-	gint                        pipe_input[2];
+	gint                        mp_in;
+	FILE                       *stream_input;
 	GIOChannel                 *channel_input;
-	gint                        pipe_output[2];
+	gint                        mp_out;
 	GIOChannel                 *channel_output;
 	
 	gint                        mp_pid;
@@ -46,7 +47,7 @@ typedef struct _RfMediaMplayerClass    RfMediaMplayerClass;
 GtkWidget* rf_media_mplayer_new (void);
 GType rf_media_mplayer_get_type (void);
 
-void rf_media_mplayer_play (GtkWidget *rmm, gchar *file);
+void rf_media_mplayer_open (GtkWidget *rmm, gchar *file);
 gboolean rf_media_mplayer_is_running (GtkWidget *widget);
 
 G_END_DECLS

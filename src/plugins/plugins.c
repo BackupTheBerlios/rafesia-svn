@@ -23,21 +23,47 @@
 
 GtkWidget *rf_module_chooser_info;
 
-void
-rf_media_set_description (ModuleInfo *info, gchar *description) {
-
+int
+rf_module_info_cb (ModuleInfo *info, gchar *name, gpointer var) {
+	
 	g_assert (info != NULL);
 	
-	info->description = g_strdup (description);
-
-}
-
-void
-rf_media_set_name (ModuleInfo *info, gchar *name) {
-
-	g_assert (info != NULL);
+	if (g_ascii_strcasecmp (name, "name") == 0) {
+		
+		info ->name = g_strdup (var);
+		return 0;
+		
+	}
 	
-	info->name = g_strdup (name);
+	if (g_ascii_strcasecmp (name, "description") == 0) {
+		
+		info->description = g_strdup (var);
+		return 0;
+		
+	}
+	
+	if (g_ascii_strcasecmp (name, "author") == 0) {
+		
+		info->author = g_strdup (var);
+		return 0;
+		
+	}
+
+	if (g_ascii_strcasecmp (name, "required version") == 0) {
+		
+		info->required_version = g_strdup (var);
+		return 0;
+		
+	}
+
+	if (g_ascii_strcasecmp (name, "type") == 0) {
+		
+		info->type = (gint) var;
+		return 0;
+		
+	}
+	
+	return -1;
 
 }
 
@@ -50,7 +76,7 @@ MediaModule *
 rf_module_media_load_from_file (gchar *filename) {
 	
 	MediaModule     *mmod = g_new0 (MediaModule, 1);
-	ModuleInfo      *(*get_module_info) (void);
+	ModuleInfo      *(*get_module_info) (gint (*ModuleInfoFunc) (ModuleInfo *info, gchar *name, gpointer var));
 	gint            (*init) (MediaModule *module);
 	
 	if (filename == NULL) 
@@ -66,7 +92,7 @@ rf_module_media_load_from_file (gchar *filename) {
 	
 	g_module_symbol (mmod->module, "get_module_info", (gpointer *)&get_module_info);
 	if (get_module_info != NULL ) {
-		mmod->info = get_module_info ();
+		mmod->info = get_module_info (rf_module_info_cb);
 		
 		if (mmod->info == NULL)
 			return (NULL);
@@ -280,7 +306,7 @@ rf_media_module_search (gchar *path) {
 	
 	for (file = (gchar *)g_dir_read_name (plug_dir); file != NULL; file= (gchar *) g_dir_read_name (plug_dir))
 		if (g_str_has_suffix (file, ".so") == TRUE) {
-			ModuleInfo      *(*get_module_info) (void);
+			ModuleInfo      *(*get_module_info) (gint (*ModuleInfoFunc) (ModuleInfo *info, gchar *name, gpointer var));
 			GModule         *module;
 			ModuleInfo      *info;
 			gchar           *filename = g_build_filename (path, file, NULL);
@@ -293,7 +319,7 @@ rf_media_module_search (gchar *path) {
 			if (get_module_info == NULL)
 				continue;
 			
-			info = get_module_info ();
+			info = get_module_info (rf_module_info_cb);
 			if (info == NULL)
 				continue;
 			
