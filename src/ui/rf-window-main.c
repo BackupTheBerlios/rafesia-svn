@@ -204,11 +204,11 @@ rf_fullscreen (GtkWidget *widget, MediaModule *mmod) {
 		gtk_widget_hide (window);*/
 		
 		widget2 = rf_widget_get ("rf menubar top");
-		if ( widget2 != NULL)
+		if (widget2 != NULL)
 			gtk_widget_show (widget2);
 		
 		widget2 = rf_widget_get ("rf box label");
-		if ( widget2 != NULL ) {
+		if (widget2 != NULL) {
 		
 			/*GtkWidget *vbox = rf_widget_get ("rf vbox main");
 			
@@ -221,7 +221,7 @@ rf_fullscreen (GtkWidget *widget, MediaModule *mmod) {
 		}
 		
 		widget2 = rf_widget_get ("rf box bottom");
-		if ( widget2 != NULL ) {
+		if (widget2 != NULL) {
 			/*
 			GtkWidget *vbox = rf_widget_get ("rf vbox main");
 
@@ -234,7 +234,7 @@ rf_fullscreen (GtkWidget *widget, MediaModule *mmod) {
 		}
 		
 		widget2 = rf_widget_get ("rf main window");
-		if ( widget2 != NULL )
+		if (widget2 != NULL)
 			gtk_window_unfullscreen (GTK_WINDOW (widget2));
 		
 		fullscreen = FALSE;
@@ -247,11 +247,11 @@ rf_fullscreen (GtkWidget *widget, MediaModule *mmod) {
 		gint       y = 0;*/
 		
 		widget2 = rf_widget_get ("rf menubar top");
-		if ( widget2 != NULL )
+		if (widget2 != NULL)
 			gtk_widget_hide (widget2);
   
 		widget2 = rf_widget_get ("rf box label");
-		if ( widget2 != NULL ) {
+		if (widget2 != NULL) {
 			
 			/*GtkWidget *box = rf_widget_get ("rf vbox main");
 		
@@ -265,7 +265,7 @@ rf_fullscreen (GtkWidget *widget, MediaModule *mmod) {
 		}
 		
 		widget2 = rf_widget_get ("rf box bottom");
-		if ( widget2 != NULL ) {
+		if (widget2 != NULL) {
 		
 			/*GtkWidget *box = rf_widget_get ("rf vbox main");
 
@@ -278,7 +278,7 @@ rf_fullscreen (GtkWidget *widget, MediaModule *mmod) {
 		}
 		
 		widget2 = rf_widget_get ("rf main window");
-		if ( widget2 != NULL )
+		if (widget2 != NULL)
 			gtk_window_fullscreen (GTK_WINDOW (widget2));
 		
 		/*gtk_window_resize (GTK_WINDOW (window), gdk_screen_width (), y);
@@ -411,16 +411,17 @@ rf_main_window_size (GtkWidget *widget, GtkAllocation *allocation, gpointer user
 	MediaModule    *mmod;
 	
 	g_return_if_fail (user_data != NULL);
+	g_return_if_fail (widget != NULL);
+	g_return_if_fail (allocation != NULL);
 	mmod = (MediaModule *) user_data;
 	
 	mmod->get_movie_size (mmod, &mhig, &mwid);
 	
 	//media_alg = rf_widget_get ("rf alignment media");
-	media_fixed = rf_widget_get ("rf fixed media");
+	//media_fixed = rf_widget_get ("rf fixed media");
+	media_fixed = widget;
 	
-	//if (media_alg == NULL)
-	if (media_fixed == NULL)
-		return;
+	g_return_if_fail (media_fixed != NULL);
 	
 	//gdk_window_get_geometry (GDK_WINDOW (media_alg->window), NULL, NULL, &wid, &hig, NULL);
 	//gdk_window_get_geometry (GDK_WINDOW (media_fixed->window), NULL, NULL, &wid, &hig, NULL);
@@ -428,11 +429,7 @@ rf_main_window_size (GtkWidget *widget, GtkAllocation *allocation, gpointer user
 	wid = allocation->width;
 	hig = allocation->height;
 	
-	if (mwid == 0 || mhig == 0 || wid == 0 || hig == 0)
-		return;
-	
-	gint ww, hh;
-	gdk_window_get_geometry (GDK_WINDOW (GTK_WIDGET (mmod->widget)->window), NULL, NULL, &ww, &hh, NULL);
+	g_return_if_fail (mwid != 0 || mhig != 0 || wid != 0 || hig != 0);
 	
 	/*
 	 * FIXME: poprawic koniecznie obliczanie ratio !!!
@@ -463,7 +460,7 @@ rf_main_window_size (GtkWidget *widget, GtkAllocation *allocation, gpointer user
 		
 		//gtk_alignment_set_padding (GTK_ALIGNMENT (media_alg), (hig - nhig) / 2, (hig - nhig) / 2, 0, 0);
 		gtk_widget_set_usize (mmod->widget, wid, nhig);
-		//gtk_fixed_move (GTK_FIXED (widget), GTK_WIDGET (mmod->widget), 0, (hig - nhig) / 2);
+		//gtk_fixed_move (GTK_FIXED (media_fixed), GTK_WIDGET (mmod->widget), 0, (hig - nhig) / 2);
 				
 	} else {
 		
@@ -480,7 +477,7 @@ rf_main_window_size (GtkWidget *widget, GtkAllocation *allocation, gpointer user
 		
 		//gtk_alignment_set_padding (GTK_ALIGNMENT (media_alg), 0, 0, (wid - nwid) / 2, (wid - nwid) / 2);
 		gtk_widget_set_usize (mmod->widget, nwid, hig);
-		//gtk_fixed_move (GTK_FIXED (widget), GTK_WIDGET (mmod->widget), (wid - nwid) / 2, 0);
+		//gtk_fixed_move (GTK_FIXED (media_fixed), GTK_WIDGET (mmod->widget), (wid - nwid) / 2, 0);
 
 	}
 
@@ -627,13 +624,13 @@ rf_interface_main_window_create (MediaModule *mmod) {
 	gtk_widget_show (menuFilm_fullscreen);
 	gtk_container_add (GTK_CONTAINER (menu_film), menuFilm_fullscreen);
 	
-	
+	/*
 	media_alignment = gtk_alignment_new (0.5, 0.5, 1, 1);
 	gtk_widget_show (media_alignment);
-	//gtk_container_add (GTK_CONTAINER (vbox1), media_alignment);
+	gtk_container_add (GTK_CONTAINER (vbox1), media_alignment);
 	gtk_alignment_set_padding (GTK_ALIGNMENT (media_alignment), 0, 0, 0, 0);
 	rf_widget_add (media_alignment, "rf alignment media");
-	
+	*/
 	
 	media_fixed = gtk_fixed_new ();
 	gtk_widget_show (media_fixed);
@@ -642,7 +639,8 @@ rf_interface_main_window_create (MediaModule *mmod) {
 	g_signal_connect (G_OBJECT (media_fixed), "motion-notify-event", G_CALLBACK (rf_media_widget_motion_event), NULL);
 	g_signal_connect (G_OBJECT (media_fixed), "key-press-event", G_CALLBACK (rf_media_widget_key_press_event), window);
 	g_signal_connect (G_OBJECT (media_fixed), "button-press-event", G_CALLBACK (rf_media_widget_button_press_event), NULL);
-	
+	g_signal_connect (GTK_OBJECT (media_fixed), "size-allocate", G_CALLBACK (rf_main_window_size), mmod);
+
 	if ( mmod->widget != NULL) {
 	
 		//gtk_container_add (GTK_CONTAINER (media_alignment), mmod->widget);
@@ -756,7 +754,7 @@ rf_interface_main_window_create (MediaModule *mmod) {
 	// Signals
 	g_signal_connect (GTK_OBJECT (window), "delete_event", G_CALLBACK (rafesia_quit),NULL);
 	g_signal_connect (GTK_OBJECT (window), "destroy_event", G_CALLBACK (rafesia_quit),NULL);
-	g_signal_connect (GTK_OBJECT (media_fixed), "size-allocate", G_CALLBACK (rf_main_window_size), mmod);
+	//g_signal_connect (GTK_OBJECT (window), "size-allocate", G_CALLBACK (rf_main_window_size), mmod);
 	
 	g_signal_connect (GTK_OBJECT (menuFilm_play), "activate", G_CALLBACK (rf_media_play), mmod);
 	gtk_widget_add_accelerator (menuFilm_play, "activate", accel_group, GDK_space, 0, GTK_ACCEL_VISIBLE);
