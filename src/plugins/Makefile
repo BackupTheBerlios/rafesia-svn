@@ -12,6 +12,6 @@ plugins:
 
 clean:
 	@echo " RM   plugins.o"
-	@rm rf-plugins.o
+	@rm -rf plugins.o
 	@cd rf-media-xine && $(MAKE) clean
 	@cd rf-media-mplayer && $(MAKE) clean
