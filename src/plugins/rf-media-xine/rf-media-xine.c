@@ -12,7 +12,23 @@ rf_media_xine_expose (GtkWidget *widget, GdkEventExpose *event, gpointer user_da
 	g_return_val_if_fail (IS_RF_MEDIA_XINE (widget), FALSE);
 	g_return_val_if_fail (event != NULL, FALSE);
 	
-	if (rmx->stream != NULL)
+	if (rmx->stream != NULL) 
+		xine_gui_send_vo_data (rmx->stream, XINE_GUI_SEND_EXPOSE_EVENT, event);
+	
+	return (TRUE);
+	
+}
+
+static gboolean
+rf_media_xine_expose_main (GtkWidget *widget, GdkEventExpose *event, gpointer user_data) {
+	
+	RfMediaXine *rmx = RF_MEDIA_XINE (user_data);
+	
+	g_return_val_if_fail (widget != NULL, FALSE);
+	g_return_val_if_fail (IS_RF_MEDIA_XINE (rmx), FALSE);
+	g_return_val_if_fail (event != NULL, FALSE);
+	
+	if (rmx->stream != NULL) 
 		xine_gui_send_vo_data (rmx->stream, XINE_GUI_SEND_EXPOSE_EVENT, event);
 	
 	return (TRUE);
@@ -86,7 +102,7 @@ rf_media_xine_realize (GtkWidget *widget) {
 	attributes.wclass            = GDK_INPUT_OUTPUT;
 	attributes.visual            = gtk_widget_get_default_visual ();
 	attributes.colormap          = gtk_widget_get_default_colormap ();
-	attributes.event_mask        = gtk_widget_get_events (widget) | GDK_EXPOSURE_MASK | GDK_POINTER_MOTION_MASK | GDK_KEY_PRESS_MASK;
+	attributes.event_mask        = GDK_ALL_EVENTS_MASK; //gtk_widget_get_events (widget) | GDK_EXPOSURE_MASK | GDK_POINTER_MOTION_MASK | GDK_KEY_PRESS_MASK;
 	widget->window               = gdk_window_new (widget->parent->window, &attributes, GDK_WA_X | GDK_WA_Y | GDK_WA_VISUAL | GDK_WA_COLORMAP);
 	this->video_window           = widget->window;
 	
@@ -110,7 +126,8 @@ rf_media_xine_realize (GtkWidget *widget) {
 	gdk_window_set_user_data (widget->window, widget);
 //	gtk_style_set_background (widget->style, widget->window, GTK_STATE_ACTIVE);
 	GTK_WIDGET_SET_FLAGS (widget, GTK_REALIZED);
-	
+	g_signal_connect_after (G_OBJECT (gtk_widget_get_toplevel (widget)), "expose-event", G_CALLBACK (rf_media_xine_expose_main), this);
+
 	return;
 
 }
