@@ -97,8 +97,14 @@ gint
 get_position (MediaModule *module, gint *pos_stream, gint *pos_time, gint *time) {
 	
 	RfMediaXine      *media = RF_MEDIA_XINE (module->widget);
+	gint              ptime, ttime, w;
 	
-	return xine_get_pos_length (media->stream, pos_stream, pos_time, time);
+	w = xine_get_pos_length (media->stream, pos_stream, &ptime, &ttime);
+	
+	*pos_time = ptime / 1000;
+	*time = ttime / 1000;
+	
+	return w;
 	
 }
 

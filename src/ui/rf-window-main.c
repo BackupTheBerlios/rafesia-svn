@@ -104,8 +104,8 @@ rf_interface_set_time_label (gint pos_time, gint length_time) {
 	if ( widget == NULL )
 		return;
 	
-	cur_time = pos_time / 1000;
-	length   = length_time / 1000;
+	cur_time = pos_time;
+	length   = length_time;
 
 	curtime_str = int_to_timestring (cur_time, 256);
 	length_str  = int_to_timestring (length, 256);
@@ -697,7 +697,7 @@ rf_interface_main_window_create (MediaModule *mmod) {
 	gtk_widget_show (scaleTime);
 	gtk_box_pack_start (GTK_BOX (hbox2), scaleTime, TRUE, TRUE, 0);
 	gtk_scale_set_draw_value (GTK_SCALE (scaleTime), FALSE);
-	rf_widget_add ( (GtkWidget *)seekerTime, "rf media progress seeker");
+	rf_widget_add ((GtkWidget *) seekerTime, "rf media progress seeker");
 
 	alignmentVolume = gtk_alignment_new (0.5, 0.5, 1, 1);
 	gtk_widget_show (alignmentVolume);

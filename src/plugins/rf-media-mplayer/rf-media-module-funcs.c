@@ -94,49 +94,46 @@ go (MediaModule *module, gint pos_stream, gint pos_time, gboolean actual) {
 }
 
 gint 
-get_position (MediaModule *module, gint *pos_stream, gint *pos_time, gint *time) {
+get_position (MediaModule *module, guint *pos_stream, guint *pos_time, guint *time) {
 	
 	RfMediaMplayer      *rmm = RF_MEDIA_MPLAYER (module->widget);
 	
-	*pos_stream = 100;
-	*pos_time = rmm->timer * 100;
-	*time = 65400;
+	if (rf_media_mplayer_is_running (GTK_WIDGET (module->widget))) {
+		
+		*pos_stream = (65536 / rmm->length + 1) * rmm->timer;
+		*pos_time = rmm->timer;
+		*time = rmm->length;
+		
+	} else {
+		
+		*pos_stream = 0;
+		*pos_time = 0;
+		*time = 0;
+
+	}
 	
 	return TRUE;
 }
 
 gint
 get_status (MediaModule *module) {
-
-	/*RfMediaXine     *media = RF_MEDIA_XINE(module->widget);
-
-	switch ( xine_get_status (media->stream) ) {
-		case XINE_STATUS_IDLE:
-			return RF_STATUS_EMPTY;
-		case XINE_STATUS_STOP:
-			return RF_STATUS_STOP;
-		case XINE_STATUS_PLAY:
-			switch (xine_get_param (media->stream, XINE_PARAM_SPEED)) {
-				case XINE_SPEED_PAUSE:
-					return RF_STATUS_PAUSE;
-				case XINE_SPEED_NORMAL:
-					return RF_STATUS_PLAY;
-			}
-		case XINE_STATUS_QUIT:
-			return RF_STATUS_QUIT;
-	}
 	
-	return (-1);*/
-	return RF_STATUS_PLAY;
+	RfMediaMplayer *rmm = RF_MEDIA_MPLAYER (module->widget);
+
+	if (rmm->ready)
+		return RF_STATUS_STOP;
+	else
+		return RF_STATUS_PLAY;
 }
 
 gint
 event_init (void *ptr_media, void (*media_event_cb)(gint event)) {
 	
-	/*RfMediaXine     *media = RF_MEDIA_XINE(ptr_media);
-
-	xine_event_create_listener_thread (xine_event_new_queue (media->stream), xine_event_cb, media_event_cb);
-	*/
+	/*
+	 RfMediaXine     *media = RF_MEDIA_XINE(ptr_media);
+	 
+	 xine_event_create_listener_thread (xine_event_new_queue (media->stream), xine_event_cb, media_event_cb);
+	 */
 	return 0;
 
 }
