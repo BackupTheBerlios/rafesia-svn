@@ -300,7 +300,7 @@ rf_interface_main_window_create (MediaModule *mmod) {
 	gtk_widget_show (menubar);
 	gtk_box_pack_start (GTK_BOX (vbox1), menubar, FALSE, FALSE, 0);
 
-	menuitem_rafesia = gtk_menu_item_new_with_mnemonic ("Rafesia");
+	menuitem_rafesia = gtk_menu_item_new_with_mnemonic ("_File");
 	gtk_widget_show (menuitem_rafesia);
 	gtk_container_add (GTK_CONTAINER (menubar), menuitem_rafesia);
 
@@ -308,7 +308,7 @@ rf_interface_main_window_create (MediaModule *mmod) {
 	gtk_menu_item_set_submenu (GTK_MENU_ITEM (menuitem_rafesia), menu1);
 
 
-	menuitem_film = gtk_menu_item_new_with_mnemonic ("Film");
+	menuitem_film = gtk_menu_item_new_with_mnemonic ("_View");
 	gtk_widget_show (menuitem_film);
 	gtk_container_add (GTK_CONTAINER (menubar), menuitem_film);
 
@@ -316,7 +316,7 @@ rf_interface_main_window_create (MediaModule *mmod) {
 	gtk_menu_item_set_submenu (GTK_MENU_ITEM (menuitem_film), menu_film);
 		
 	
-	menuitem_help = gtk_menu_item_new_with_mnemonic ("Help");
+	menuitem_help = gtk_menu_item_new_with_mnemonic ("_Help");
 	gtk_widget_show (menuitem_help);
 	gtk_container_add (GTK_CONTAINER (menubar), menuitem_help);
 
