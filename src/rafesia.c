@@ -159,14 +159,12 @@ rf_gui_create (gpointer data) {
 
 	gchar   *mrl = (gchar *) data;
 	
-	if (mediamod != NULL && g_main_loop_is_running (mainloop)) 
-	{
+	if (mediamod != NULL && g_main_loop_is_running (mainloop)) {
 		GtkWidget         *win;
 	
 		win = rf_interface_main_window_create (mediamod);
 		
 		gdk_window_process_updates (gtk_widget_get_root_window(win), TRUE);
-		gtk_widget_add_events (mediamod->widget, GDK_EXPOSURE_MASK);
 		
 		gtk_widget_show_all (win);
 		gtk_widget_hide (mediamod->widget);
@@ -198,9 +196,8 @@ main (gint argc, gchar *argv[]) {
 
 	scr_init ();
 
-	if (!g_module_supported ()) { 
+	if (!g_module_supported ())
 		g_error ("Cannot initialize modules.\n");
-	}
 
 	if (argc > 0)
 		mrl = argv[1];

@@ -168,11 +168,11 @@ rf_media_xine_class_init (gpointer class, gpointer class_data) {
 	parent_class = gtk_type_class (gtk_widget_get_type ());
 
 	/* GtkWidget */
-	widget_class->realize                  = rf_media_xine_realize;
-	//widget_class->unrealize                = rf_media_xine_unrealize;
-	//widget_class->size_request             = rf_media_xine_size_request;
-	widget_class->size_allocate            = rf_media_xine_size_allocate;
-	widget_class->expose_event             = (void *)rf_media_xine_expose;
+	widget_class->realize                  = (void *) rf_media_xine_realize;
+	//widget_class->unrealize                = (void *) rf_media_xine_unrealize;
+	//widget_class->size_request             = (void *) rf_media_xine_size_request;
+	widget_class->size_allocate            = (void *) rf_media_xine_size_allocate;
+	widget_class->expose_event             = (void *) rf_media_xine_expose;
 
 	/* GObject */
 	object_class->set_property             = NULL;

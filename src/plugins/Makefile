@@ -4,6 +4,7 @@ CC=gcc -g
 all:
 	@$(MAKE) plugins
 	@cd rf-media-xine && $(MAKE)
+	@cd rf-media-mplayer && $(MAKE)
 
 plugins:
 	@echo " CC   plugins.c"
@@ -11,5 +12,6 @@ plugins:
 
 clean:
 	@echo " RM   plugins.o"
-	@rm -rf plugins.o
+	@rm rf-plugins.o
 	@cd rf-media-xine && $(MAKE) clean
+	@cd rf-media-mplayer && $(MAKE) clean

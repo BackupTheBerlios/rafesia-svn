@@ -23,7 +23,7 @@
 #include "../plugins.h"
 
 gint
-open(MediaModule *module, gchar *mrl) {
+open (MediaModule *module, gchar *mrl) {
 
 	RfMediaXine     *media = RF_MEDIA_XINE (module->widget);
 	

@@ -1,46 +1,35 @@
-//#define TICTACTOE(obj)          GTK_CHECK_CAST (obj, tictactoe_get_type (), Tictactoe)
-//#define TICTACTOE_CLASS(klass)  GTK_CHECK_CLASS_CAST (klass, tictactoe_get_type (), RfMixerClass)
-//#define IS_TICTACTOE(obj)       GTK_CHECK_TYPE (obj, tictactoe_get_type ())
+#ifndef __RF_WIDGET_MIXER_H__
+#define __RF_WIDGET_MIXER_H__
 
+#include <gtk/gtk.h>
 
-
-typedef struct _RfMixerPrivate  RfMixerPrivate;
-typedef struct _RfMixer         RfMixer;
-typedef struct _RfMixerClass    RfMixerClass;
-
-
-struct _RfMixerPrivate {
-
-	GtkWidget *window;
-	GtkWidget *button;
-	GtkWidget *scale;
-};
-	
+G_BEGIN_DECLS
+#define RF_MIXER_TYPE            (rf_mixer_get_type ())
+#define RF_MIXER(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), RF_MIXER_TYPE, RfMixer))
+#define RF_MIXER_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST ((klass), RF_MIXER_TYPE, RftMixerClass))
+#define IS_RF_MIXER(obj)         (G_TYPE_CHECK_INSTANCE_TYPE ((obj), RF_MIXER_TYPE))
+#define IS_RF_MIXER_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), RF_MIXER_TYPE))
 
 struct _RfMixer {
 
-	GtkVBox parent;
-	RfMixerPrivate *priv;
-	
+	GtkButton                   button;
+	GtkWidget                  *window;
+	GtkWidget                  *scale;
+
 };
 
 struct _RfMixerClass {
-	GtkVBoxClass parent;
-//	void (* rf_mixer) (RfMixer *ttt);
+
+	GtkButtonClass              parent_class;
 	
 };
 
-GType          rf_mixer_get_type             (void);
-GtkWidget*     rf_mixer_new                  (void);
-static void    rf_mixer_class_init           (RfMixerClass *klass);
-static void    rf_mixer_init                 (RfMixer      *ttt);
-static void    rf_mixer_toggle               (GtkWidget *widget, RfMixer *ttt);
+typedef struct _RfMixer         RfMixer;
+typedef struct _RfMixerClass    RfMixerClass;
 
-enum {
-	TICTACTOE_SIGNAL,
-	LAST_SIGNAL
-};
-static gint rf_mixer_signals[LAST_SIGNAL] = { 0 };
+GtkWidget* rf_mixer_new (void);
+GType rf_mixer_get_type (void);
 
-static GtkVBoxClass *parent_class = NULL;
+G_END_DECLS
 
+#endif /* __RF_WIDGET_MIXER_H__ */

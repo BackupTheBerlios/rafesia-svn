@@ -35,9 +35,9 @@ gboolean            fullscreen;
 void
 rf_interface_labelplaying_update (gchar *mrl) {
 	
-	GtkWidget *lab = rf_widget_get ("rf playing file label");
-	gchar *file=mrl;
-	gint i=0;
+	GtkWidget   *lab = rf_widget_get ("rf playing file label");
+	gchar       *file = mrl;
+	gint         i = 0;
 	
 	if ( lab == NULL)
 		return;
@@ -54,7 +54,7 @@ rf_interface_labelplaying_update (gchar *mrl) {
 void
 rf_media_open_mrl (gchar *mrl, MediaModule *mmod) {
 
-	gint i=0;
+	gint       i=0;
 	GtkWidget *img = rf_widget_get ("rf play image");
 	
 	mmod->open_mrl (mmod, mrl);
@@ -195,46 +195,92 @@ rf_fullscreen (GtkWidget *widget, MediaModule *mmod) {
 	if (fullscreen) {
 	
 		GtkWidget *widget2;
+		/*GtkWidget *box = rf_widget_get ("(fullscreen) bottom_vbox");
+		GtkWidget *window = rf_widget_get ("(fullscreen) bottom_window");
+		
+		gtk_widget_hide (window);*/
 		
 		widget2 = rf_widget_get ("rf menubar top");
 		if ( widget2 != NULL)
 			gtk_widget_show (widget2);
 		
 		widget2 = rf_widget_get ("rf box label");
-		if ( widget2 != NULL )
+		if ( widget2 != NULL ) {
+		
+			/*GtkWidget *vbox = rf_widget_get ("rf vbox main");
+			
+			g_object_ref (widget2);
+			gtk_container_remove (GTK_CONTAINER (box), widget2);
+			gtk_box_pack_start (GTK_BOX (vbox), widget2, FALSE, FALSE, 0);
+		 	*/
 			gtk_widget_show (widget2);
+			
+		}
 		
 		widget2 = rf_widget_get ("rf box bottom");
-		if ( widget2 != NULL )
+		if ( widget2 != NULL ) {
+			/*
+			GtkWidget *vbox = rf_widget_get ("rf vbox main");
+
+			g_object_ref (widget2);
+			gtk_container_remove (GTK_CONTAINER (box), widget2);
+			gtk_box_pack_start (GTK_BOX (vbox), widget2, FALSE, FALSE, 0);
+			*/
 			gtk_widget_show (widget2);
+			
+		}
 		
-		widget2 = rf_widget_get ("rafesia main window");
+		widget2 = rf_widget_get ("rf main window");
 		if ( widget2 != NULL )
 			gtk_window_unfullscreen (GTK_WINDOW (widget2));
-	
+		
 		fullscreen = FALSE;
 		
 	} else {
 	
 		GtkWidget *widget2;
+		/*GtkWidget *window = rf_widget_get ("(fullscreen) bottom_window");
+		GtkWidget *vbox = rf_widget_get ("(fullscreen) bottom_vbox");\
+		gint       y = 0;*/
 		
-
 		widget2 = rf_widget_get ("rf menubar top");
 		if ( widget2 != NULL )
 			gtk_widget_hide (widget2);
   
 		widget2 = rf_widget_get ("rf box label");
-		if ( widget2 != NULL )
+		if ( widget2 != NULL ) {
+			
+			/*GtkWidget *box = rf_widget_get ("rf vbox main");
+		
+			y = box->allocation.height;
+			g_object_ref (widget2);
+			gtk_container_remove (GTK_CONTAINER (box), widget2);
+			gtk_box_pack_start (GTK_BOX (vbox), widget2, FALSE, FALSE, 0);
+			*/
 			gtk_widget_hide (widget2);
+			
+		}
 		
 		widget2 = rf_widget_get ("rf box bottom");
-		if ( widget2 != NULL )
-			gtk_widget_hide (widget2);
+		if ( widget2 != NULL ) {
 		
-		widget2 = rf_widget_get ("rafesia main window");
-		if ( widget2 !=NULL )
+			/*GtkWidget *box = rf_widget_get ("rf vbox main");
+
+			y = y + box->allocation.height;	
+			g_object_ref (widget2);
+			gtk_container_remove (GTK_CONTAINER (box), widget2);
+			gtk_box_pack_start (GTK_BOX (vbox), widget2, FALSE, FALSE, 0);
+		 	*/
+			gtk_widget_hide (widget2);
+		}
+		
+		widget2 = rf_widget_get ("rf main window");
+		if ( widget2 != NULL )
 			gtk_window_fullscreen (GTK_WINDOW (widget2));
 		
+		/*gtk_window_resize (GTK_WINDOW (window), gdk_screen_width (), y);
+		gtk_window_move (GTK_WINDOW (window), 0, gdk_screen_height () - y);
+		gtk_widget_show (window);*/
 		fullscreen = TRUE;
 		
 	}
@@ -348,7 +394,7 @@ gboolean
 rf_media_widget_key_press_event (GtkWidget *widget, GdkEventKey *event, gpointer user_data) {
 	
 	GdkEvent eventk;
-	g_printf ("aaa\n");
+	
 	eventk.type = GDK_KEY_PRESS;
 	eventk.key = *event;
 	
@@ -474,16 +520,22 @@ rf_interface_main_window_create (MediaModule *mmod) {
 
 	GtkAccelGroup    *accel_group;
 	
+	GtkWidget        *fullscreen_bottom_window;
+	GtkWidget        *fullscreen_bottom_vbox;
+	GtkWidget        *tmp_wdg;
+	gint              y = 0;
+	
 	g_return_val_if_fail (mmod != NULL, (GtkWidget *)-1);
 	accel_group = gtk_accel_group_new ();
 	
 	window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_title (GTK_WINDOW (window), ("Rafesia Movie Player"));
-	rf_widget_add (window, "rafesia main window");
+	rf_widget_add (window, "rf main window");
 
 	vbox1 = gtk_vbox_new (FALSE, 0);
 	gtk_widget_show (vbox1);
 	gtk_container_add (GTK_CONTAINER (window), vbox1);
+	rf_widget_add (vbox1, "rf vbox main");
 
 	menubar = gtk_menu_bar_new ();
 	gtk_widget_show (menubar);
@@ -651,13 +703,32 @@ rf_interface_main_window_create (MediaModule *mmod) {
 	gtk_widget_show (alignmentVolume);
 	gtk_box_pack_start (GTK_BOX (hbox2), alignmentVolume, FALSE, FALSE, 0);
 	gtk_alignment_set_padding (GTK_ALIGNMENT (alignmentVolume), 3, 3, 3, 3);
-
-	//imageVolume = gtk_image_new_from_file (g_build_filename ("./images/", "volume.png", NULL));
+	
+	//imageVolume = gtk_image_new_from_stock ("gtk-index", GTK_ICON_SIZE_BUTTON);
 	//gtk_widget_show (imageVolume);
 	buttonVolume = rf_mixer_new ();
 	gtk_widget_show (buttonVolume);
 	gtk_container_add (GTK_CONTAINER (alignmentVolume), buttonVolume);
+	
+	
+	// Fullscreen windows
+	/*fullscreen_bottom_window = gtk_window_new (GTK_WINDOW_POPUP);
+	rf_widget_add (fullscreen_bottom_window, "(fullscreen) bottom_window");
+	fullscreen_bottom_vbox = gtk_vbox_new (FALSE, 0);
+	rf_widget_add (fullscreen_bottom_vbox, "(fullscreen) bottom_vbox");
 
+	tmp_wdg = rf_widget_get ("rf box label");
+	y = tmp_wdg->allocation.height;
+	tmp_wdg = rf_widget_get ("rf box bottom");
+	y += tmp_wdg->allocation.height;
+	
+	gtk_container_add (GTK_CONTAINER (fullscreen_bottom_window), fullscreen_bottom_vbox);
+	gtk_widget_show (fullscreen_bottom_window);
+	
+	gtk_window_set_default_size (GTK_WINDOW (fullscreen_bottom_window), gdk_screen_width (), y);
+	gtk_window_move (GTK_WINDOW (fullscreen_bottom_window), 0, gdk_screen_height () - y);*/
+	
+	// Signals
 	g_signal_connect (GTK_OBJECT (window), "delete_event", G_CALLBACK (rafesia_quit),NULL);
 	g_signal_connect (GTK_OBJECT (window), "destroy_event", G_CALLBACK (rafesia_quit),NULL);
 	
