@@ -36,30 +36,16 @@ rf_media_mplayer_is_running (GtkWidget *widget) {
 gint
 rf_media_mplayer_launch (GtkWidget *widget) {
 	
-	gint                i;
 	extern char       **environ;
 	gchar              *command;
 	RfMediaMplayer     *rmm = RF_MEDIA_MPLAYER (widget);
-	gchar              *argv[11];
-	
-	argv[0] = g_strdup ("mplayer");
-	argv[1] = g_strdup ("-identify");
-	argv[2] = g_strdup ("-vo");
-	argv[3] = g_strdup ("xv");
-	argv[4] = g_strdup ("-slave");
-	argv[5] = g_strdup ("-osdlevel");
-	argv[6] = g_strdup ("0");
-	argv[7] = g_strdup ("-nolirc");
-	argv[8] = g_strdup ("-wid");
-	argv[9] = g_strdup_printf ("%d", GDK_WINDOW_XWINDOW (widget->window));
-	argv[10] = g_strdup_printf ("%s", rmm->file);
-	argv[11] = '\0';
-	
+	gchar              *argv[] = {"mplayer", "-wid", g_strdup_printf ("%d", GDK_WINDOW_XWINDOW (widget->window)), "-identify", "-vo", "xv", "-slave", "-osdlevel", "0", "-nolirc", rmm->file, '\0'};
+//	gchar              *argv[] = {"mplayer", "-wid", g_strdup_printf ("%d", GDK_WINDOW_XWINDOW (widget->window)), "-identify", "-vo", "xv", "-slave", "-osdlevel", "0", "-nolirc", "-noautosub", rmm->file, '\0'};
+
 	if (!g_spawn_async_with_pipes (NULL, argv, NULL, G_SPAWN_SEARCH_PATH | G_SPAWN_STDERR_TO_DEV_NULL, NULL, NULL, &(rmm->mp_pid), &(rmm->mp_in), &(rmm->mp_out), NULL, NULL))
 		return -1;
 	
-	for (i=0; i<11; i++)
-		g_free (argv[i]);
+	g_free (argv[2]);
 
 	
 	rmm->channel_output   = g_io_channel_unix_new (rmm->mp_out);

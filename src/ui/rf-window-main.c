@@ -117,23 +117,21 @@ rf_interface_set_time_label (gint pos_time, gint length_time) {
 
 gboolean
 update_slider_cb (gpointer seek) {
-
+	
 	gint           pos_stream, pos_time, length_time;
 	GtkObject     *seeker = GTK_OBJECT(seek);
 	GtkWidget     *img = rf_widget_get ("rf play image");
 	gfloat         pos;
+	
 
 	if (mediamod->get_status (mediamod) != RF_STATUS_PLAY) {
-		
+	
 		if (img != NULL)
 			gtk_image_set_from_stock (GTK_IMAGE (img), "gtk-media-play", GTK_ICON_SIZE_BUTTON);
 
 		return (TRUE);
-		
-	}
 	
-//	if (img != NULL)
-//		gtk_image_set_from_stock (GTK_IMAGE (img), "gtk-media-pause", GTK_ICON_SIZE_BUTTON);
+	}
 	
 	if (!mediamod->get_position (mediamod, &pos_stream, &pos_time, &length_time))
 		return (TRUE);
@@ -146,23 +144,28 @@ update_slider_cb (gpointer seek) {
 	gtk_adjustment_set_value (GTK_ADJUSTMENT (seeker), pos); 
 	
 	rf_interface_set_time_label(pos_time, length_time);
-	
-	return (TRUE);
+
+	return TRUE;
 	
 }
 
-static void
-seek_cb (GtkWidget* widget, MediaModule *mmod) {
-
+gboolean
+rf_seekertime_cb (GtkWidget *wid, GdkEventButton *event, MediaModule *mmod) {
+		
 	gint          speed = mmod->get_status (mmod);
 	GtkWidget    *img = rf_widget_get ("rf play image");
-	
-	if (!no_recursion ) {
-		mmod->go (mmod, (gint) GTK_ADJUSTMENT (widget)->value, 0, 0); 
+	GtkWidget    *widget;
+		
+	widget = rf_widget_get ("rf media progress seeker");
+
+	if (!no_recursion) {
+		mmod->go (mmod, (gint) GTK_ADJUSTMENT (widget)->value, 0, 0);
+
 		if (speed == RF_STATUS_PAUSE && img != NULL)
 			gtk_image_set_from_stock (GTK_IMAGE (img), "gtk-media-pause", GTK_ICON_SIZE_BUTTON);
 	}
-	
+
+	return FALSE;
 }
 
 void
@@ -325,19 +328,7 @@ rf_window_aboutbox_cb (GtkWidget *widget, GdkEvent *event) {
 
 	rf_window_about_build (NULL);
 
-/*	GtkWidget *ab;
-	g_printf ("kwa\n");
-
-	ab = g_new0 (GtkWidget, sizeof(*GtkWidget));
-	ab = gtk_about_dialog_new ();
-
-	gtk_about_dialog_set_version (GTK_ABOUT_DIALOG (ab), VERSION);
-	gtk_about_dialog_set_copyright (GTK_ABOUT_DIALOG (ab), "(c) Rafesia developers");
-	gtk_about_dialog_set_website (GTK_ABOUT_DIALOG (ab), "http://poklikaubym.pl");
-	
-	gtk_show_about_dialog (NULL, NULL);
-
-*/	return (TRUE);
+	return (TRUE);
 
 }
 
@@ -408,59 +399,6 @@ rf_media_widget_button_press_event (GtkWidget *widget, GdkEventButton *event, gp
 	if (event->type == GDK_2BUTTON_PRESS && event->button == 1)
 			rf_fullscreen (NULL, NULL);
 		
-}
-
-gboolean
-rf_media_widget_event (GtkWidget *widget, GdkEvent *event, gpointer user_data) {
-
-	switch (event->type) {
-		case (GDK_SCROLL): {
-			switch (event->scroll.direction) {
-				case (GDK_SCROLL_UP): rf_media_go_forward (NULL, get_mediamodule ()); break;
-				case (GDK_SCROLL_DOWN): rf_media_go_backward (NULL, get_mediamodule ()); break;
-				case (GDK_MOTION_NOTIFY): {
-						g_printf ("GDK_MOTION_NOTIFY x: %f y: %f [xroot: %f, yroot: %f]\n", event->motion.x, event->motion.y, event->motion.x_root, event->motion.y_root);
-						break;
-
-				}
-			}
-		}
-		case (GDK_NOTHING): g_printf ("GDK_NOTHING\n"); break;
-		case (GDK_DELETE): g_printf ("GDK_DELETE\n"); break;
-		case (GDK_DESTROY): g_printf ("GDK_DESTROY\n"); break;
-		case (GDK_EXPOSE): g_printf ("GDK_EXPOSE\n"); break;
-		case (GDK_BUTTON_PRESS): g_printf ("GDK_BUTTON_PRESS\n"); break;
-		case (GDK_2BUTTON_PRESS): g_printf ("GDK_2BUTTON_PRESS\n"); break;
-		case (GDK_3BUTTON_PRESS): g_printf ("GDK_3BUTTON_PRESS\n"); break;
-		case (GDK_BUTTON_RELEASE): g_printf ("GDK_BUTTON_RELEASE\n"); break;
-		case (GDK_KEY_PRESS): g_printf ("GDK_KEY_PRESS\n"); break;
-		case (GDK_KEY_RELEASE): g_printf ("GDK_KEY_RELEASE\n"); break;
-		case (GDK_ENTER_NOTIFY): g_printf ("GDK_ENTER_NOTIFY\n"); break;
-		case (GDK_LEAVE_NOTIFY): g_printf ("GDK_LEAVE_NOTIFY\n"); break;
-		case (GDK_FOCUS_CHANGE): g_printf ("GDK_FOCUS_CHANGE\n"); break;
-		case (GDK_CONFIGURE): g_printf ("GDK_CONFIGURE\n"); break;
-		case (GDK_MAP): g_printf ("GDK_MAP\n"); break;
-		case (GDK_UNMAP): g_printf ("GDK_UNMAP\n"); break;
-		case (GDK_PROPERTY_NOTIFY): g_printf ("GDK_PROPERTY_NOTIFY\n"); break;
-		case (GDK_SELECTION_CLEAR): g_printf ("GDK_SELECTION_CLEAR\n"); break;
-		case (GDK_SELECTION_REQUEST): g_printf ("GDK_SELECTION_REQUEST\n"); break;
-		case (GDK_SELECTION_NOTIFY): g_printf ("GDK_SELECTION_NOTIFY\n"); break;
-		case (GDK_PROXIMITY_IN): g_printf ("GDK_PROXIMITY_IN\n"); break;
-		case (GDK_PROXIMITY_OUT): g_printf ("GDK_PROXIMITY_OUT\n"); break;
-		case (GDK_DRAG_MOTION): g_printf ("GDK_DRAG_MOTION\n"); break;
-		case (GDK_DRAG_LEAVE): g_printf ("GDK_DRAG_LEAVE\n"); break;
-		case (GDK_DRAG_STATUS): g_printf ("GDK_DRAG_STATUS\n"); break;
-		case (GDK_DROP_START): g_printf ("GDK_DROP_START\n"); break;
-		case (GDK_DROP_FINISHED): g_printf ("GDK_DROP_FINISHED\n"); break;
-		case (GDK_CLIENT_EVENT): g_printf ("GDK_CLIENT_EVENT\n"); break;
-		case (GDK_VISIBILITY_NOTIFY): g_printf ("GDK_VISIBILITY_NOTIFY\n"); break;
-		case (GDK_NO_EXPOSE): g_printf ("GDK_NO_EXPOSE\n"); break;
-		case (GDK_WINDOW_STATE): g_printf ("GDK_WINDOW_STATE\n"); break;
-		case (GDK_SETTING): g_printf ("GDK_SETTING\n"); break;
-	
-	}
-
-	return (TRUE); 
 }
 
 GtkWidget *
@@ -610,8 +548,6 @@ rf_interface_main_window_create (MediaModule *mmod) {
 		g_signal_connect (G_OBJECT (mmod->widget), "motion-notify-event", G_CALLBACK (rf_media_widget_motion_event), NULL);
 		g_signal_connect (G_OBJECT (mmod->widget), "key-press-event", G_CALLBACK (rf_media_widget_key_press_event), window);
 		g_signal_connect (G_OBJECT (mmod->widget), "button-press-event", G_CALLBACK (rf_media_widget_button_press_event), NULL);
-		// g_signal_connect (G_OBJECT (mmod->widget), "event", G_CALLBACK (rf_media_widget_event), NULL);
-		// ?? g_signal_connect (G_OBJECT (mmod->widget), "can-activate-accel", G_CALLBACK (rf_media_widget_activate_accel), NULL);
 	
 	}
 
@@ -626,18 +562,6 @@ rf_interface_main_window_create (MediaModule *mmod) {
 	gtk_box_pack_start (GTK_BOX (hbox1), labelPlaying, FALSE, FALSE, 0);
 	rf_widget_add (labelPlaying, "rf playing file label");
 
-/*
-	buttonAbout = gtk_button_new();
-	gtk_button_set_relief(GTK_BUTTON(buttonAbout), GTK_RELIEF_NONE);
-	gtk_widget_show(buttonAbout);
-	gtk_box_pack_start (GTK_BOX (hbox1), buttonAbout, FALSE, FALSE, 0);
-	
-	labelAbout = gtk_label_new ("");
-	gtk_label_set_markup(GTK_LABEL(labelAbout), "<span underline=\"single\" foreground=\"#0000FF\">(o filmie)</span>");
-	gtk_widget_show (labelAbout);
-	gtk_container_add (GTK_CONTAINER(buttonAbout), labelAbout);
- */
-	
 	labelSpace = gtk_label_new ("");
 	gtk_widget_show (labelSpace);
 	gtk_box_pack_start (GTK_BOX (hbox1), labelSpace, TRUE, TRUE, 0);
@@ -704,8 +628,6 @@ rf_interface_main_window_create (MediaModule *mmod) {
 	gtk_box_pack_start (GTK_BOX (hbox2), alignmentVolume, FALSE, FALSE, 0);
 	gtk_alignment_set_padding (GTK_ALIGNMENT (alignmentVolume), 3, 3, 3, 3);
 	
-	//imageVolume = gtk_image_new_from_stock ("gtk-index", GTK_ICON_SIZE_BUTTON);
-	//gtk_widget_show (imageVolume);
 	buttonVolume = rf_mixer_new ();
 	gtk_widget_show (buttonVolume);
 	gtk_container_add (GTK_CONTAINER (alignmentVolume), buttonVolume);
@@ -756,8 +678,8 @@ rf_interface_main_window_create (MediaModule *mmod) {
 	g_signal_connect (GTK_OBJECT (menuFilm_forward), "activate", G_CALLBACK (rf_media_go_forward), mmod);
 	gtk_widget_add_accelerator (menuFilm_forward, "activate", accel_group, GDK_Right, GDK_MOD1_MASK, GTK_ACCEL_VISIBLE);
 	
-	g_signal_connect (GTK_OBJECT (seekerTime), "value-changed", G_CALLBACK (seek_cb), mmod);
-	
+	g_signal_connect (GTK_OBJECT (scaleTime), "button-release-event", G_CALLBACK (rf_seekertime_cb), mmod);
+
 	gtk_window_add_accel_group (GTK_WINDOW (window), accel_group);
 
 	mediamod = mmod;

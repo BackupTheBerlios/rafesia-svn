@@ -67,10 +67,10 @@ rf_widget_get (gchar *name) {
 	
 		gchar *wname;
 		
-		wname = g_object_get_data (G_OBJECT(lista->data), "rf_widget_name");
+		wname = g_object_get_data (G_OBJECT (lista->data), "rf_widget_name");
 		
 		if (g_ascii_strcasecmp (name, wname) == 0)
-			return (GtkWidget *)lista->data;
+			return (GtkWidget *) lista->data;
 
 		lista = g_slist_next (lista);
 	
