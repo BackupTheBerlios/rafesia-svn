@@ -1,0 +1,7 @@
+* funkcja "otwórz plik" ;-), powinna wywalaæ filechoosera
+* okienko "o programie" (ptw)
+* okienko preferencji
+* parsowanie argumentów rafesii za pomoc± getopt (ptw)
+* playlista
+* ostatnio odladane w menu
+* dzialajace lokale
