@@ -1,0 +1,23 @@
+2004-12-09 22:59  Piotr Tarasewicz  <ptw@hurd.pl>
+
+	* src/Makefile, src/rafesia.c, src/ui/Makefile,
+	  src/ui/rf-window-about.c: Dropped Gnome support.
+
+2004-12-09 21:14  Lukasz Zukowski  <pax@legar.pl>
+
+	* Makefile, TODO, images, images/fov.png, images/next.png,
+	  images/pause.png, images/play.png, images/previous.png,
+	  images/rew.png, images/volume.png, plugins, src, src/Makefile,
+	  src/core, src/core/Makefile, src/core/internal.c,
+	  src/core/internal.h, src/plugins, src/plugins/Makefile,
+	  src/plugins/plugins.c, src/plugins/plugins.h,
+	  src/plugins/rf-media-xine, src/plugins/rf-media-xine/Makefile,
+	  src/plugins/rf-media-xine/rf-media-module-funcs.c,
+	  src/plugins/rf-media-xine/rf-media-xine.c,
+	  src/plugins/rf-media-xine/rf-media-xine.h, src/plugins/xine,
+	  src/plugins/xine/Makefile, src/plugins/xine/gtkxine.c,
+	  src/plugins/xine/gtkxine.h, src/plugins/xine/xine_media_module.c,
+	  src/rafesia.c, src/rafesia.h, src/ui, src/ui/Makefile,
+	  src/ui/rf-widget-mixer.c, src/ui/rf-widget-mixer.h,
+	  src/ui/rf-window-about.c, src/ui/rf-window-main.c,
+	  src/ui/rf-window-main.h: Commited all available files
