@@ -19,9 +19,20 @@
 
 #define VERSION "0.0.1"
 
+#define RF_NORMAL  "\e[0m"
+#define RF_WHITE   "\e[0;37m"
+#define RF_YELLOW  "\e[0;33m"
+#define RF_GREEN   "\e[0;32m"
+#define RF_RED     "\e[0;31m"
+#define RF_YELLOW  "\e[0;33m"
+#define RF_BLUE    "\e[0;34m"
+#define RF_MAGENTA "\e[0;35m"
+#define RF_BOLD    RF_YELLOW
+
 GtkWidget *rf_widget_get (gchar *name);
 gboolean   rf_widget_add (GtkWidget *widget, gchar *name);
 gboolean   rf_widget_remove (gchar *name);
+
 
 void rf_set_module_media (void *mmod);
 void rafesia_quit();

@@ -96,10 +96,10 @@ rf_media_play (GtkButton *button, MediaModule *mmod) {
 void
 rf_interface_set_time_label (gint pos_time, gint length_time) {
 	
-	GtkWidget *widget = rf_widget_get ("rf time label");
-	gchar *curtime_str, *length_str;
-	gchar time_str[256];
-	gint cur_time, length;
+	GtkWidget         *widget = rf_widget_get ("rf time label");
+	gchar             *curtime_str, *length_str;
+	gchar              time_str[256];
+	gint               cur_time, length;
 	
 	if ( widget == NULL )
 		return;
@@ -108,9 +108,9 @@ rf_interface_set_time_label (gint pos_time, gint length_time) {
 	length   = length_time / 1000;
 
 	curtime_str = int_to_timestring (cur_time, 256);
-	length_str = int_to_timestring (length, 256);
+	length_str  = int_to_timestring (length, 256);
 	
-	snprintf(time_str, 256, "%s / %s", curtime_str, length_str);
+	snprintf (time_str, 256, "%s / %s", curtime_str, length_str);
 	gtk_label_set_text (GTK_LABEL (widget), time_str);
 
 }
@@ -118,10 +118,10 @@ rf_interface_set_time_label (gint pos_time, gint length_time) {
 gboolean
 update_slider_cb (gpointer seek) {
 
-	gint pos_stream, pos_time, length_time;
-	GtkObject *seeker = GTK_OBJECT(seek);
-	GtkWidget *img = rf_widget_get ("rf play image");
-	gfloat pos;
+	gint           pos_stream, pos_time, length_time;
+	GtkObject     *seeker = GTK_OBJECT(seek);
+	GtkWidget     *img = rf_widget_get ("rf play image");
+	gfloat         pos;
 
 	if (mediamod->get_status (mediamod) != RF_STATUS_PLAY) {
 		
@@ -233,7 +233,7 @@ rf_fullscreen (GtkWidget *widget, MediaModule *mmod) {
 		
 		widget = rf_widget_get ("rafesia main window");
 		if ( widget !=NULL )
-			gtk_window_fullscreen ( GTK_WINDOW (widget) );
+			gtk_window_fullscreen (GTK_WINDOW (widget));
 		
 		fullscreen = TRUE;
 		
@@ -247,6 +247,7 @@ gboolean
 rf_file_open_cb (GtkWidget *widget, GdkEvent *event) {
 
 	GtkWidget *dialog;
+
 	dialog = gtk_file_chooser_dialog_new ("Open File",
 					      NULL,
 					      GTK_FILE_CHOOSER_ACTION_OPEN,
@@ -259,7 +260,7 @@ rf_file_open_cb (GtkWidget *widget, GdkEvent *event) {
 
 		filename = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (dialog));
 		
-		rf_media_open_mrl(filename, (MediaModule *)get_mediamodule());
+		rf_media_open_mrl(filename, (MediaModule *)get_mediamodule ());
 		rf_interface_labelplaying_update (filename);
 		
 		g_free (filename);
@@ -312,12 +313,17 @@ media_event (GtkWidget *widget, GdkEvent *event, gpointer user_data) {
 				case (GDK_SCROLL_DOWN): rf_media_go_backward (NULL, get_mediamodule ()); break;
 			}
 		}
-		/*
+		case (GDK_MOTION_NOTIFY): {
+			
+			g_printf ("GDK_MOTION_NOTIFY x: %f y: %f [xroot: %f, yroot: %f]\n", event->motion.x, event->motion.y, event->motion.x_root, event->motion.y_root);
+			break;
+
+		}
+		
 		case (GDK_NOTHING): g_printf ("GDK_NOTHING\n"); break;
 		case (GDK_DELETE): g_printf ("GDK_DELETE\n"); break;
 		case (GDK_DESTROY): g_printf ("GDK_DESTROY\n"); break;
 		case (GDK_EXPOSE): g_printf ("GDK_EXPOSE\n"); break;
-		case (GDK_MOTION_NOTIFY): g_printf ("GDK_MOTION_NOTIFY\n"); break;
 		case (GDK_BUTTON_PRESS): g_printf ("GDK_BUTTON_PRESS\n"); break;
 		case (GDK_2BUTTON_PRESS): g_printf ("GDK_2BUTTON_PRESS\n"); break;
 		case (GDK_3BUTTON_PRESS): g_printf ("GDK_3BUTTON_PRESS\n"); break;
@@ -346,7 +352,7 @@ media_event (GtkWidget *widget, GdkEvent *event, gpointer user_data) {
 		case (GDK_NO_EXPOSE): g_printf ("GDK_NO_EXPOSE\n"); break;
 		case (GDK_WINDOW_STATE): g_printf ("GDK_WINDOW_STATE\n"); break;
 		case (GDK_SETTING): g_printf ("GDK_SETTING\n"); break;
-		*/
+		
 	}
 	
 }
@@ -497,7 +503,7 @@ rf_interface_main_window_create (MediaModule *mmod) {
 		
 	}
 
-	gtk_widget_set_events (eventbox_media, GDK_KEY_PRESS_MASK);
+	gtk_widget_set_events (eventbox_media, GDK_ALL_EVENTS_MASK);
 	g_signal_connect (G_OBJECT (eventbox_media), "event", G_CALLBACK (media_event), NULL );
 	gtk_widget_realize (eventbox_media);
 	

@@ -30,8 +30,8 @@ rf_media_xine_expose (GtkWidget *widget, GdkEventExpose *event, gpointer user_da
 
 		g_free( rect );
 	}*/
-	
-	xine_gui_send_vo_data (rmx->stream, XINE_GUI_SEND_EXPOSE_EVENT, event);
+	if (rmx != NULL) 
+		xine_gui_send_vo_data (rmx->stream, XINE_GUI_SEND_EXPOSE_EVENT, event);
 	
 	return (TRUE);
 	
@@ -85,6 +85,134 @@ frame_output_cb(void *data, int video_width, int video_height, double video_pixe
 	
 }
 
+/*void 
+xine_thread (gpointer *data) {
+	
+	GtkWidget *widget = GTK_WIDGET (data);
+	RfMediaXine *this = RF_MEDIA_XINE (data);
+	GdkEvent  *event;
+	GdkWindow *window;
+
+	if (widget != NULL)
+		window = ((RfMediaXine *)widget)->video_window;
+	
+	while (TRUE) {
+	
+
+	
+	XEvent event;
+
+    XNextEvent (GDK_WINDOW_XDISPLAY (this->video_window), &event);
+
+
+    switch (event.type) {
+    case Expose:
+
+      if (event.xexpose.count != 0)
+	break;
+
+      xine_gui_send_vo_data (this->stream,
+			     XINE_GUI_SEND_EXPOSE_EVENT, &event);
+      break;
+
+    case MotionNotify: 
+      {
+	XMotionEvent     *mevent = (XMotionEvent *) &event;
+	x11_rectangle_t   rect;
+	xine_event_t      event;
+	xine_input_data_t input;
+	
+	printf("gtkxine: mouse event: mx=%d my=%d\n",mevent->x, mevent->y); 
+	
+	rect.x = mevent->x;
+	rect.y = mevent->y;
+	rect.w = 0;
+	rect.h = 0;
+	
+	xine_gui_send_vo_data (this->stream, 
+			       XINE_GUI_SEND_TRANSLATE_GUI_TO_VIDEO, 
+			       (void*)&rect);
+	
+	event.type        = XINE_EVENT_INPUT_MOUSE_MOVE;
+	event.data        = &input;
+	event.data_length = sizeof(input);
+	input.button      = 0; 
+	input.x           = rect.x;
+	input.y           = rect.y;
+	xine_event_send (this->stream, &event);
+
+      }
+      break;
+      
+    case ButtonPress: 
+      {
+	XButtonEvent *bevent = (XButtonEvent *) &event;
+	
+	printf("gtkxine: mouse button event: mx=%d my=%d\n",
+	       bevent->x, bevent->y); 
+	
+	if (bevent->button == Button1) {
+	  
+	  x11_rectangle_t   rect;
+	  xine_event_t      event;
+	  xine_input_data_t input;
+	  
+	  rect.x = bevent->x;
+	  rect.y = bevent->y;
+	  rect.w = 0;
+	  rect.h = 0;
+	  
+	  xine_gui_send_vo_data (this->stream, 
+				 XINE_GUI_SEND_TRANSLATE_GUI_TO_VIDEO, 
+				 (void*)&rect);
+	  
+	  event.type        = XINE_EVENT_INPUT_MOUSE_BUTTON;
+	  event.data        = &input;
+	  event.data_length = sizeof(input);
+	  input.button      = 1;
+	  input.x           = rect.x;
+	  input.y           = rect.y;
+	  xine_event_send (this->stream, &event);
+	}
+      }
+      break;
+
+    case KeyPress:
+      {
+	GdkEventKey    gdk_event;
+	XKeyEvent     *kevent = (XKeyEvent *) &event;
+	char           buffer [20];
+	int            bufsize=20;
+	KeySym         keysym;
+	XComposeStatus compose;
+	int            ret;
+
+	XLookupString (kevent, buffer, bufsize,
+		       &keysym, &compose);
+
+	gdk_event.keyval = keysym;
+
+	gdk_event.type   = GDK_KEY_PRESS;
+	gdk_event.window = GDK_WINDOW (gdk_window_get_toplevel (this->video_window));
+	gdk_event.time   = kevent->time;
+	gdk_event.state  = (GdkModifierType) kevent->state;
+	gdk_event.string = strdup (buffer);
+	gdk_event.length = 1;
+
+	gtk_signal_emit_by_name (GTK_OBJECT (gtk_widget_get_toplevel (GTK_WIDGET (this))),
+				 "key_press_event",
+				 &gdk_event, &ret);
+      }
+
+      break;
+    }
+
+      xine_gui_send_vo_data (this->stream,
+			     XINE_GUI_SEND_COMPLETION_EVENT, &event);
+	}
+
+}*/
+
 static void 
 rf_media_xine_realize (GtkWidget *widget) {
 
@@ -119,7 +247,7 @@ rf_media_xine_realize (GtkWidget *widget) {
 
 	if (!this->vo_port) {
 	
-		g_printf ("rf-media-xine: couldn't open video driver\n");
+		g_warning ("rf-media-xine: couldn't open video driver\n");
 		
 		return ;
 		
@@ -127,10 +255,9 @@ rf_media_xine_realize (GtkWidget *widget) {
 
 	this->stream = xine_stream_new (this->xine, this->ao_port, this->vo_port);
 	
-	this->fullscreen = FALSE;
-	
 	g_signal_connect_after (G_OBJECT (gtk_widget_get_toplevel (widget)), "expose-event", G_CALLBACK (rf_media_xine_expose), this);
 	GTK_WIDGET_SET_FLAGS (widget, GTK_REALIZED);
+	//GThread *xine_th = g_thread_create (&xine_thread, this, FALSE, NULL);
 	
 	return;
 
@@ -238,8 +365,6 @@ GtkWidget *
 rf_media_xine_new (void) {
 	
 	GtkWidget *widget = GTK_WIDGET (g_object_new (rf_media_xine_get_type (), NULL));
-	
-	g_signal_connect (GTK_OBJECT (widget), "expose-event", G_CALLBACK (rf_media_xine_expose),NULL);
 	
 	return widget;
 	

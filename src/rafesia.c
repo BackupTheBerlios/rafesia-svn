@@ -27,6 +27,37 @@ GMainLoop         *mainloop;
 MediaModule       *mediamod;
 GSList            *widgets_list=NULL;
 
+gpointer
+rf_log_handler (const gchar *log_domain, GLogLevelFlags log_level, const gchar *message, gpointer user_data) {
+
+	gchar *type;
+	gchar *color;
+	
+	switch (log_level) {
+		case G_LOG_LEVEL_ERROR:
+		case G_LOG_LEVEL_CRITICAL:
+			type = g_strdup ("ERROR");
+			color = RF_RED;
+			break;
+		case G_LOG_LEVEL_MESSAGE:
+			type = g_strdup ("MESSAGE");
+			color = RF_GREEN;
+			break;
+		case G_LOG_LEVEL_WARNING:
+			type = g_strdup ("WARNING");
+			color = RF_YELLOW;
+			break;
+		case G_LOG_LEVEL_DEBUG:
+		case G_LOG_LEVEL_INFO:
+			type = g_strdup ("DEBUG");
+			color = RF_WHITE;
+			break;
+	};
+	
+	g_printf ("%s%7s%s: %s", color, type, RF_NORMAL, message);
+
+}
+
 GtkWidget *
 rf_widget_get (gchar *name) {
 
@@ -79,8 +110,8 @@ rf_widget_add (GtkWidget *widget, gchar *name) {
 void
 scr_init (void) {
 	
-	g_printf ("Rafesia - movie player v%s\n"
-		"(c) 2004 by Rafesia Team.\n\n", VERSION);
+	g_message ("Rafesia - movie player v%s%s\n", RF_BOLD, VERSION);
+	g_message ("(c) 2004 by Rafesia Team.\n");
 	
 }
 
@@ -160,12 +191,15 @@ main (gint argc, gchar *argv[]) {
 	gint               i;
 	gchar             *mrl = NULL;
 
-	
+	/* set handler for all incoming messages */
+	g_log_set_handler (NULL, G_LOG_LEVEL_ERROR | G_LOG_LEVEL_CRITICAL | G_LOG_LEVEL_WARNING |
+			G_LOG_LEVEL_MESSAGE | G_LOG_LEVEL_INFO | G_LOG_LEVEL_DEBUG,
+			(GLogFunc) rf_log_handler, NULL);
+
 	scr_init ();
 
 	if (!g_module_supported ()) { 
-		g_printf ("rafesia error: cannot initialize modules.\n");
-		exit (1);
+		g_error ("Cannot initialize modules.\n");
 	}
 
 	if (argc > 0)
@@ -186,6 +220,7 @@ main (gint argc, gchar *argv[]) {
 	
 	maincontext = g_main_context_default ();
 	mainloop = g_main_loop_new (maincontext, FALSE);
+
 	
 	g_timeout_add (100, rf_gui_create, mrl);
 	g_main_loop_run (mainloop);

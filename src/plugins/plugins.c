@@ -43,7 +43,7 @@ rf_media_set_name (ModuleInfo *info, gchar *name) {
 
 void
 rf_module_null_cb (void) {
-	g_printf("funkcja modulu niedostepna\n");
+	g_warning ("funkcja modulu niedostepna\n");
 }
 
 MediaModule *
@@ -75,17 +75,17 @@ rf_module_media_load_from_file (gchar *filename) {
 			return (NULL);
 			
 		mmod->info->filename = mmod->filename;
-		g_printf ("module file: %s\n", mmod->info->filename);
-		g_printf ("Loading media module: %s\n", mmod->info->name);
-		g_printf ("(c) %s, rafesia req: %s\n", mmod->info->author, mmod->info->required_version);
-		g_printf ("%s\n", mmod->info->description);
+		g_message ("module file: %s\n", mmod->info->filename);
+		g_message ("Loading media module: %s\n", mmod->info->name);
+		g_message ("(c) %s, rafesia req: %s\n", mmod->info->author, mmod->info->required_version);
+		g_message ("%s\n", mmod->info->description);
 	} else {
 		return (NULL);
 	}
 	
 	g_module_symbol (mmod->module, "media_module_init", (gpointer *)&init);
 	if (init == NULL) {
-		g_printf ("ERROR: cannot found init_plugin function\n");
+		g_error ("cannot found init_plugin function\n");
 		return (NULL);
 	}
 

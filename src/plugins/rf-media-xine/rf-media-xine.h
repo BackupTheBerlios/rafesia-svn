@@ -31,9 +31,6 @@ struct _RfMediaXine {
 	gchar                       configfile[2048];
 	x11_visual_t                vis;
 
-	gboolean                    fullscreen;
-	GdkWindow                  *fullscreen_window;
-
 };
 
 struct _RfMediaXineClass {
