@@ -24,7 +24,6 @@
 #include "../core/internal.h"
 #include "../plugins/plugins.h"
 #include "rf-widget-mixer.h"
-#include "rf-widget-mcontainer.h"
 
 MediaModule *get_mediamodule (void);
 
@@ -397,7 +396,7 @@ gboolean
 rf_media_widget_button_press_event (GtkWidget *widget, GdkEventButton *event, gpointer user_data) {
 	
 	if (event->type == GDK_2BUTTON_PRESS && event->button == 1)
-			rf_fullscreen (NULL, NULL);
+		rf_fullscreen (NULL, NULL);
 		
 }
 
@@ -433,9 +432,6 @@ rf_interface_main_window_create (MediaModule *mmod) {
 	GtkWidget        *labelAbout;
 	GtkWidget        *labelSpace;
 	GtkWidget        *labelTime;
-	
-	GtkWidget        *media_alignment;
-	GtkWidget        *media_fixed;
 	
 	GtkWidget        *hbox2;
 
@@ -542,22 +538,14 @@ rf_interface_main_window_create (MediaModule *mmod) {
 	gtk_widget_show (menuFilm_fullscreen);
 	gtk_container_add (GTK_CONTAINER (menu_film), menuFilm_fullscreen);
 	
-	
-	GtkWidget *mcont = rf_mcontainer_new ();
-	gtk_widget_show (mcont);
-	gtk_container_add (GTK_CONTAINER (vbox1), mcont);
-	g_signal_connect (G_OBJECT (mcont), "motion-notify-event", G_CALLBACK (rf_media_widget_motion_event), NULL);
-	g_signal_connect (G_OBJECT (mcont), "key-press-event", G_CALLBACK (rf_media_widget_key_press_event), window);
-	g_signal_connect (G_OBJECT (mcont), "button-press-event", G_CALLBACK (rf_media_widget_button_press_event), NULL);
-	
 	if ( mmod->widget != NULL) {
 	
-		gtk_container_add (GTK_CONTAINER (mcont), mmod->widget);
+		gtk_container_add (GTK_CONTAINER (vbox1), mmod->widget);
 		rf_widget_add (mmod->widget, "rf media widget");
 		g_signal_connect (G_OBJECT (mmod->widget), "motion-notify-event", G_CALLBACK (rf_media_widget_motion_event), NULL);
 		g_signal_connect (G_OBJECT (mmod->widget), "key-press-event", G_CALLBACK (rf_media_widget_key_press_event), window);
 		g_signal_connect (G_OBJECT (mmod->widget), "button-press-event", G_CALLBACK (rf_media_widget_button_press_event), NULL);
-	
+		
 	}
 	
 	hbox1 = gtk_hbox_new (FALSE, 5);

@@ -39,8 +39,8 @@ rf_media_mplayer_launch (GtkWidget *widget) {
 	extern char       **environ;
 	gchar              *command;
 	RfMediaMplayer     *rmm = RF_MEDIA_MPLAYER (widget);
-	gchar              *argv[] = {"mplayer", "-wid", g_strdup_printf ("%d", GDK_WINDOW_XWINDOW (widget->window)), "-identify", "-vo", "xv", "-slave", "-osdlevel", "0", "-nolirc", rmm->file, '\0'};
-//	gchar              *argv[] = {"mplayer", "-wid", g_strdup_printf ("%d", GDK_WINDOW_XWINDOW (widget->window)), "-identify", "-vo", "xv", "-slave", "-osdlevel", "0", "-nolirc", "-noautosub", rmm->file, '\0'};
+	gchar              *argv[] = {"mplayer", "-wid", g_strdup_printf ("%d", GDK_WINDOW_XWINDOW (rmm->mp_window)), "-identify", "-vo", "xv", "-slave", "-osdlevel", "0", "-nolirc", rmm->file, '\0'};
+//	gchar              *argv[] = {"mplayer", "-wid", g_strdup_printf ("%d", GDK_WINDOW_XWINDOW (rmm->mp_window)), "-identify", "-vo", "xv", "-slave", "-osdlevel", "0", "-nolirc", "-noautosub", rmm->file, '\0'};
 
 	if (!g_spawn_async_with_pipes (NULL, argv, NULL, G_SPAWN_SEARCH_PATH | G_SPAWN_STDERR_TO_DEV_NULL, NULL, NULL, &(rmm->mp_pid), &(rmm->mp_in), &(rmm->mp_out), NULL, NULL))
 		return -1;
@@ -140,18 +140,20 @@ rf_media_mplayer_event_thread (gpointer data) {
 	XEvent             report;
 	
 	while (1) {
-		if (XCheckWindowEvent (GDK_WINDOW_XDISPLAY (widget->window), GDK_WINDOW_XID (widget->window), KeyPressMask, &report)) {
+		/*if (XCheckWindowEvent (GDK_WINDOW_XDISPLAY (rmm->mp_window), GDK_WINDOW_XID (rmm->mp_window), KeyPressMask | KeyReleaseMask | ButtonPressMask | ButtonReleaseMask | EnterWindowMask | LeaveWindowMask | PointerMotionMask | PointerMotionHintMask | Button1MotionMask | Button2MotionMask | Button3MotionMask | Button4MotionMask | Button5MotionMask | ButtonMotionMask | KeymapStateMask | ExposureMask | VisibilityChangeMask | StructureNotifyMask | ResizeRedirectMask | SubstructureNotifyMask | SubstructureRedirectMask | FocusChangeMask | PropertyChangeMask | ColormapChangeMask | OwnerGrabButtonMask, &report)) {
 			
 			//report.xany.window = GDK_WINDOW_XID (widget->window);
 			//report.xkey.window = GDK_WINDOW_XID (widget->window);
 			
 			//XSendEvent (GDK_WINDOW_XDISPLAY (widget->window), GDK_WINDOW_XID (widget->window), False, SubstructureRedirectMask, &report);
 			//g_printf ("\t>> wcisnieto klawisz <<\n");
-
-		}
+			g_printf ("event\n");
+		}*/
+		
 		/*GdkEvent *event = gdk_event_get ();
 
 		if (event != NULL)
+			
 		switch (event->type) {
 			case GDK_KEY_PRESS:
 			case GDK_KEY_RELEASE:
@@ -166,17 +168,18 @@ void
 rf_media_mplayer_open (GtkWidget *widget, gchar *file) {
 	
 	gint            pid;
-
+	RfMediaMplayer *rmm;
+	
 	g_return_if_fail (widget != NULL);
 	g_return_if_fail (IS_RF_MEDIA_MPLAYER (widget));
-
-	RfMediaMplayer *rmm = RF_MEDIA_MPLAYER (widget);
+	
+	rmm = RF_MEDIA_MPLAYER (widget);
 	
 	rmm->file = g_strdup (file);
 	pid = rf_media_mplayer_launch (GTK_WIDGET (widget));
-
-	//GThread *mplayer_thread = NULL;
-
+	
+	GThread *mplayer_thread = NULL;
+	
 	//mplayer_thread = g_thread_create (rf_media_mplayer_event_thread, rmm, FALSE, NULL);
 }
 
@@ -258,13 +261,70 @@ rf_media_mplayer_size_allocate (GtkWidget *widget, GtkAllocation *allocation) {
 	
 	rmm->width  = allocation->width;
 	rmm->height = allocation->height;
-
-	if (GTK_WIDGET_REALIZED (widget))
+	
+	if (GTK_WIDGET_REALIZED (widget)) {
+		
+		gfloat   x, y, mx, my;
+		gfloat   ratio, nratio;
+		gchar   *tmp;
+		
 		gdk_window_move_resize (widget->window, allocation->x, allocation->y, rmm->width, rmm->height);
+		
+		/*
+		 * FIXME: poprawic koniecznie obliczanie ratio !!!
+		 */
+	
+		tmp = g_strdup_printf ("%dx%d", rmm->org_width, rmm->org_height);
+		sscanf (tmp, "%fx%f", &mx, &my);
+		ratio = mx / my;
+		g_free (tmp);
+
+		tmp = g_strdup_printf ("%dx%d", rmm->width, rmm->height);
+		sscanf (tmp, "%fx%f", &x, &y);
+		nratio = x / y;
+		g_free (tmp);
+	
+		if (ratio > nratio) {
+			
+			// obszar za wysoki, margines w pionie
+			
+			gfloat           dx, tmp2;
+			gint             nhig;
+			GtkAllocation    ch_alloc;
+			
+			dx = x / mx;
+			tmp2 = dx * my;
+			tmp = g_strdup_printf ("%f", tmp2);
+			sscanf (tmp, "%d,", &nhig);
+			g_free (tmp);
+			
+			gdk_window_move_resize (rmm->mp_window, 0, (rmm->height - nhig) / 2, rmm->width, nhig);
+			
+		} else {
+			
+			// Obszar za szeroki, margines w poziomie
+			
+			gfloat           dy, tmp2;
+			gint             nwid;
+			GtkAllocation    ch_alloc;
+			
+			dy = y / my;
+			tmp2 = dy * mx;
+			tmp = g_strdup_printf ("%f", tmp2);
+			sscanf (tmp, "%d,", &nwid);
+			g_free (tmp);
+			
+			gdk_window_move_resize (rmm->mp_window, (rmm->width - nwid) / 2, 0, nwid, rmm->height);
+			
+		}
+		
+	}
 	
 	if (rmm->ready) {
+		
 		rf_media_mplayer_restart (widget);
 		gdk_window_move_resize (widget->window, allocation->x, allocation->y, 320, 200);
+		
 	}
 	
 	widget->allocation = *allocation;
@@ -286,24 +346,75 @@ rf_media_mplayer_expose (GtkWidget *widget, GdkEventExpose *event, gpointer user
 	
 }
 
-static void
-rf_media_mplayer_init (RfMediaMplayer *rmm) {
+GdkFilterReturn
+mp_window_filter (GdkXEvent *xevent, GdkEvent *event, gpointer user_data) {
 	
+	RfMediaMplayer      *rmm;
+	GtkWidget           *widget;
+	GdkEvent            *nevent;
+	gboolean             changed = FALSE;
+	
+	g_return_if_fail (xevent != NULL);
+	g_return_if_fail (event != NULL);
+	g_return_if_fail (user_data != NULL);
+	
+	rmm = RF_MEDIA_MPLAYER (user_data);
+	widget = GTK_WIDGET (user_data);
+	nevent = gdk_event_copy (event);
+	
+	XEvent *xe = (XEvent *) xevent;
+	g_printf ("xevent: %d\n", xe->type);
+	switch (nevent->type) {
+		case GDK_MOTION_NOTIFY:
+			nevent->motion.window = widget->parent->window;
+			changed = TRUE;
+			break;
+			
+		case GDK_BUTTON_PRESS:
+		case GDK_2BUTTON_PRESS:
+		case GDK_3BUTTON_PRESS:
+		case GDK_BUTTON_RELEASE:
+			nevent->button.window = widget->parent->window;
+			changed = TRUE;
+			break;
+			
+		case GDK_KEY_PRESS:
+		case GDK_KEY_RELEASE:
+			nevent->key.window = widget->parent->window;
+			changed = TRUE;
+			break;
+			
+		case GDK_SCROLL:
+			nevent->scroll.window = widget->parent->window;
+			changed = TRUE;
+			break;
+
+	}
+	
+	nevent->any.window = widget->parent->window;
+	//if (!changed) {
+	//	g_printf ("aaa\n");
+	//	return GDK_FILTER_CONTINUE;
+	//}
+	
+	gdk_event_put (nevent);
+	return GDK_FILTER_REMOVE;
 }
 
 static void
 rf_media_mplayer_realize (GtkWidget *widget) {
 	
 	RfMediaMplayer      *this;
-	GdkWindowAttr        attributes;
+	GdkWindowAttr        attributes, mp_attrib;
+	GdkColor             color;
 	
 	g_return_if_fail (widget != NULL);
 	g_return_if_fail (IS_RF_MEDIA_MPLAYER (widget));
-
+	
 	this = RF_MEDIA_MPLAYER (widget);
-
-	attributes.x                 = 0;
-	attributes.y                 = 0;
+	
+	attributes.x                 = widget->allocation.x;
+	attributes.y                 = widget->allocation.y;
 	attributes.width             = 320;
 	attributes.height            = 200;
 	attributes.window_type       = GDK_WINDOW_CHILD;
@@ -315,7 +426,26 @@ rf_media_mplayer_realize (GtkWidget *widget) {
 	this->mp_pid                 = -1;
 	
 	gdk_window_set_user_data (widget->window, widget);
+	gdk_color_parse ("black", &color);
+	gtk_widget_modify_bg (widget, GTK_STATE_NORMAL, &color);
+	
+	
+	mp_attrib.window_type        = GDK_WINDOW_CHILD;
+	mp_attrib.x                  = 0;
+	mp_attrib.y                  = 0;
+	mp_attrib.width              = widget->allocation.width;
+	mp_attrib.height             = widget->allocation.height;
+	mp_attrib.wclass             = GDK_INPUT_OUTPUT;
+	mp_attrib.visual             = gtk_widget_get_visual (widget);
+	mp_attrib.colormap           = gtk_widget_get_colormap (widget);
+	mp_attrib.event_mask         = GDK_ALL_EVENTS_MASK;
+	this->mp_window              = gdk_window_new (widget->window, &mp_attrib, GDK_VISIBILITY_NOTIFY_MASK);
+	
+	widget->style                = gtk_style_attach (widget->style, widget->window);
 
+	//gdk_window_add_filter (GDK_WINDOW (this->mp_window), mp_window_filter, this);
+	gdk_window_set_user_data (this->mp_window, widget);
+	
 	GTK_WIDGET_SET_FLAGS (widget, GTK_REALIZED);
 	gtk_widget_set_size_request (GTK_WIDGET (this), attributes.width, attributes.height);
 
@@ -327,14 +457,13 @@ rf_media_mplayer_class_init (RfMediaMplayerClass *class) {
 	GtkObjectClass *object_class;
 	GtkWidgetClass *widget_class;
 	
-	object_class = (GtkObjectClass*) class;
-	widget_class = (GtkWidgetClass*) class;
+	object_class                        = (GtkObjectClass*) class;
+	widget_class                        = (GtkWidgetClass*) class;
 	
-	parent_class = gtk_type_class (gtk_widget_get_type ());
+	parent_class                        = gtk_type_class (gtk_widget_get_type ());
 	
-	widget_class->realize               = (void *) rf_media_mplayer_realize;
-	widget_class->size_allocate         = (void *) rf_media_mplayer_size_allocate;
-	//widget_class->expose_event          = (void *) rf_media_mplayer_expose;
+	widget_class->realize               = rf_media_mplayer_realize;
+	widget_class->size_allocate         = rf_media_mplayer_size_allocate;
 
 }
 
@@ -354,7 +483,7 @@ rf_media_mplayer_get_type (void) {
 			NULL, /* class_data */
 			sizeof (RfMediaMplayer),
 			0,    /* n_preallocs */
-			(GInstanceInitFunc) rf_media_mplayer_init,
+			NULL,
 		};
 		
 		rmm_type = g_type_register_static (GTK_TYPE_WIDGET, "RfMediaMplayer", &rmm_info, 0);

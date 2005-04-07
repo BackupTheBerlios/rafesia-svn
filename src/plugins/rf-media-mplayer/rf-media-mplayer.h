@@ -15,6 +15,7 @@ G_BEGIN_DECLS
 struct _RfMediaMplayer {
 
 	GtkWidget                   widget;
+	GdkWindow                  *mp_window;
 	
 	gchar                      *file;
 	gint                        status;
