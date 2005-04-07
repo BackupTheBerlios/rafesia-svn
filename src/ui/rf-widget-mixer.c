@@ -83,7 +83,7 @@ rf_mixer_init (RfMixer *rmix) {
 	//g_signal_connect (GTK_OBJECT (rmix), "clicked", G_CALLBACK (rf_mixer_activate), rmix);
 	//g_signal_connect (GTK_OBJECT (rmix), "pressed", G_CALLBACK (rf_mixer_activate), rmix);
 
-}	
+}
 
 void
 rf_mixer_class_init (gpointer class, gpointer class_data) {

@@ -175,9 +175,9 @@ rf_media_mplayer_open (GtkWidget *widget, gchar *file) {
 	rmm->file = g_strdup (file);
 	pid = rf_media_mplayer_launch (GTK_WIDGET (widget));
 
-	GThread *mplayer_thread = NULL;
+	//GThread *mplayer_thread = NULL;
 
-	mplayer_thread = g_thread_create (rf_media_mplayer_event_thread, rmm, FALSE, NULL);
+	//mplayer_thread = g_thread_create (rf_media_mplayer_event_thread, rmm, FALSE, NULL);
 }
 
 gboolean
@@ -256,7 +256,6 @@ rf_media_mplayer_size_allocate (GtkWidget *widget, GtkAllocation *allocation) {
 	
 	rmm = RF_MEDIA_MPLAYER (widget);
 	
-		
 	rmm->width  = allocation->width;
 	rmm->height = allocation->height;
 

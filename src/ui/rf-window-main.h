@@ -17,10 +17,9 @@
  * Boston, MA 02111-1307, USA.
  */
 
-
 GtkWidget *rf_interface_main_window_create (MediaModule *mmod);
 void rf_interface_set_time_label (gint pos_time, gint length_time);
-MediaModule *get_meiamodule (void);
+MediaModule *get_mediamodule (void);
 void rf_media_open_mrl (gchar *mrl, MediaModule *mmod);
 gboolean rf_file_open_cb (GtkWidget *widget, GdkEvent *event);
 gboolean rf_window_aboutbox_cb (GtkWidget *widget, GdkEvent *event);

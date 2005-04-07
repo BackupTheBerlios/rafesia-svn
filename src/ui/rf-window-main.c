@@ -24,6 +24,7 @@
 #include "../core/internal.h"
 #include "../plugins/plugins.h"
 #include "rf-widget-mixer.h"
+#include "rf-widget-mcontainer.h"
 
 MediaModule *get_mediamodule (void);
 
@@ -119,7 +120,7 @@ gboolean
 update_slider_cb (gpointer seek) {
 	
 	gint           pos_stream, pos_time, length_time;
-	GtkObject     *seeker = GTK_OBJECT(seek);
+	GtkObject     *seeker = GTK_OBJECT (seek);
 	GtkWidget     *img = rf_widget_get ("rf play image");
 	gfloat         pos;
 	
@@ -309,7 +310,7 @@ rf_file_open_cb (GtkWidget *widget, GdkEvent *event) {
 
 		filename = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (dialog));
 		
-		rf_media_open_mrl(filename, (MediaModule *)get_mediamodule ());
+		rf_media_open_mrl(filename, (MediaModule *) get_mediamodule ());
 		rf_interface_labelplaying_update (filename);
 		
 		g_free (filename);
@@ -356,7 +357,7 @@ rf_media_widget_motion_event (GtkWidget *widget, GdkEventMotion *event, gpointer
 		x = event->x;
 		y = event->y;
 		
-		if ( box != NULL && box_label != NULL) {
+		if (box != NULL && box_label != NULL) {
 			gint wy = gdk_screen_height () - (box->allocation.height + box_label->allocation.height);
 			
 			if (GTK_WIDGET_VISIBLE (box)) {
@@ -624,13 +625,14 @@ rf_interface_main_window_create (MediaModule *mmod) {
 	gtk_widget_show (menuFilm_fullscreen);
 	gtk_container_add (GTK_CONTAINER (menu_film), menuFilm_fullscreen);
 	
+	
 	/*
 	media_alignment = gtk_alignment_new (0.5, 0.5, 1, 1);
 	gtk_widget_show (media_alignment);
-	gtk_container_add (GTK_CONTAINER (vbox1), media_alignment);
+	//gtk_container_add (GTK_CONTAINER (vbox1), media_alignment);
 	gtk_alignment_set_padding (GTK_ALIGNMENT (media_alignment), 0, 0, 0, 0);
 	rf_widget_add (media_alignment, "rf alignment media");
-	*/
+	
 	
 	media_fixed = gtk_fixed_new ();
 	gtk_widget_show (media_fixed);
@@ -640,11 +642,20 @@ rf_interface_main_window_create (MediaModule *mmod) {
 	g_signal_connect (G_OBJECT (media_fixed), "key-press-event", G_CALLBACK (rf_media_widget_key_press_event), window);
 	g_signal_connect (G_OBJECT (media_fixed), "button-press-event", G_CALLBACK (rf_media_widget_button_press_event), NULL);
 	g_signal_connect (GTK_OBJECT (media_fixed), "size-allocate", G_CALLBACK (rf_main_window_size), mmod);
-
+	*/
+	
+	GtkWidget *mcont = rf_mcontainer_new ();
+	gtk_widget_show (mcont);
+	gtk_container_add (GTK_CONTAINER (vbox1), mcont);
+	g_signal_connect (G_OBJECT (mcont), "motion-notify-event", G_CALLBACK (rf_media_widget_motion_event), NULL);
+	g_signal_connect (G_OBJECT (mcont), "key-press-event", G_CALLBACK (rf_media_widget_key_press_event), window);
+	g_signal_connect (G_OBJECT (mcont), "button-press-event", G_CALLBACK (rf_media_widget_button_press_event), NULL);
+	
 	if ( mmod->widget != NULL) {
 	
 		//gtk_container_add (GTK_CONTAINER (media_alignment), mmod->widget);
-		gtk_fixed_put (GTK_FIXED (media_fixed), GTK_WIDGET (mmod->widget), 0, 0);
+		//gtk_fixed_put (GTK_FIXED (media_fixed), GTK_WIDGET (mmod->widget), 0, 0);
+		gtk_container_add (GTK_CONTAINER (mcont), mmod->widget);
 		rf_widget_add (mmod->widget, "rf media widget");
 		g_signal_connect (G_OBJECT (mmod->widget), "motion-notify-event", G_CALLBACK (rf_media_widget_motion_event), NULL);
 		g_signal_connect (G_OBJECT (mmod->widget), "key-press-event", G_CALLBACK (rf_media_widget_key_press_event), window);
@@ -703,7 +714,7 @@ rf_interface_main_window_create (MediaModule *mmod) {
 	gtk_misc_set_padding (GTK_MISC (imagePlay), 6, 6);
 	rf_widget_add (imagePlay, "rf play image");
 
-	alignmentForward = gtk_alignment_new (0, 0, 0, 0);
+	alignmentForward = gtk_alignment_new (0.5, 0.5, 1, 1);
 	gtk_widget_show (alignmentForward);
 	gtk_box_pack_start (GTK_BOX (hbox2), alignmentForward, FALSE, FALSE, 0);
 	gtk_alignment_set_padding (GTK_ALIGNMENT (alignmentForward), 3, 3, 3, 3);
