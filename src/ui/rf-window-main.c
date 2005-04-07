@@ -401,89 +401,6 @@ rf_media_widget_button_press_event (GtkWidget *widget, GdkEventButton *event, gp
 		
 }
 
-void
-rf_main_window_size (GtkWidget *widget, GtkAllocation *allocation, gpointer user_data) {
-	
-	gint            mwid, mhig, wid, hig;
-	gfloat          ratio, mx, my, x, y, nratio;
-	gchar          *res;
-	GtkWidget      *media_alg;
-	GtkWidget      *media_fixed;
-	MediaModule    *mmod;
-	
-	g_return_if_fail (user_data != NULL);
-	g_return_if_fail (widget != NULL);
-	g_return_if_fail (allocation != NULL);
-	mmod = (MediaModule *) user_data;
-	
-	mmod->get_movie_size (mmod, &mhig, &mwid);
-	
-	//media_alg = rf_widget_get ("rf alignment media");
-	//media_fixed = rf_widget_get ("rf fixed media");
-	media_fixed = widget;
-	
-	g_return_if_fail (media_fixed != NULL);
-	
-	//gdk_window_get_geometry (GDK_WINDOW (media_alg->window), NULL, NULL, &wid, &hig, NULL);
-	//gdk_window_get_geometry (GDK_WINDOW (media_fixed->window), NULL, NULL, &wid, &hig, NULL);
-	
-	wid = allocation->width;
-	hig = allocation->height;
-	
-	g_return_if_fail (mwid != 0 || mhig != 0 || wid != 0 || hig != 0);
-	
-	/*
-	 * FIXME: poprawic koniecznie obliczanie ratio !!!
-	 */
-	
-	res = g_strdup_printf ("%dx%d", mwid, mhig);
-	sscanf (res, "%fx%f", &mx, &my);
-	ratio = mx / my;
-	g_free (res);
-
-	res = g_strdup_printf ("%dx%d", wid, hig);
-	sscanf (res, "%fx%f", &x, &y);
-	nratio = x / y;
-	g_free (res);
-	
-	if (ratio > nratio) {
-		
-		// obszar za wysoki, margines w pionie
-		
-		gfloat dx, tmp;
-		gint nhig;
-		
-		dx = x / mx;
-		tmp = dx * my;
-		res = g_strdup_printf ("%f", tmp);
-		sscanf (res, "%d,", &nhig);
-		g_free (res);
-		
-		//gtk_alignment_set_padding (GTK_ALIGNMENT (media_alg), (hig - nhig) / 2, (hig - nhig) / 2, 0, 0);
-		gtk_widget_set_usize (mmod->widget, wid, nhig);
-		//gtk_fixed_move (GTK_FIXED (media_fixed), GTK_WIDGET (mmod->widget), 0, (hig - nhig) / 2);
-				
-	} else {
-		
-		// Obszar za szeroki, margines w poziomie
-		
-		gfloat dy, tmp;
-		gint nwid;
-		
-		dy = y / my;
-		tmp = dy * mx;
-		res = g_strdup_printf ("%f", tmp);
-		sscanf (res, "%d,", &nwid);
-		g_free (res);
-		
-		//gtk_alignment_set_padding (GTK_ALIGNMENT (media_alg), 0, 0, (wid - nwid) / 2, (wid - nwid) / 2);
-		gtk_widget_set_usize (mmod->widget, nwid, hig);
-		//gtk_fixed_move (GTK_FIXED (media_fixed), GTK_WIDGET (mmod->widget), (wid - nwid) / 2, 0);
-
-	}
-
-}
-
 GtkWidget *
 rf_interface_main_window_create (MediaModule *mmod) {
 
@@ -626,24 +543,6 @@ rf_interface_main_window_create (MediaModule *mmod) {
 	gtk_container_add (GTK_CONTAINER (menu_film), menuFilm_fullscreen);
 	
 	
-	/*
-	media_alignment = gtk_alignment_new (0.5, 0.5, 1, 1);
-	gtk_widget_show (media_alignment);
-	//gtk_container_add (GTK_CONTAINER (vbox1), media_alignment);
-	gtk_alignment_set_padding (GTK_ALIGNMENT (media_alignment), 0, 0, 0, 0);
-	rf_widget_add (media_alignment, "rf alignment media");
-	
-	
-	media_fixed = gtk_fixed_new ();
-	gtk_widget_show (media_fixed);
-	gtk_container_add (GTK_CONTAINER (vbox1), media_fixed);
-	rf_widget_add (media_alignment, "rf fixed media");
-	g_signal_connect (G_OBJECT (media_fixed), "motion-notify-event", G_CALLBACK (rf_media_widget_motion_event), NULL);
-	g_signal_connect (G_OBJECT (media_fixed), "key-press-event", G_CALLBACK (rf_media_widget_key_press_event), window);
-	g_signal_connect (G_OBJECT (media_fixed), "button-press-event", G_CALLBACK (rf_media_widget_button_press_event), NULL);
-	g_signal_connect (GTK_OBJECT (media_fixed), "size-allocate", G_CALLBACK (rf_main_window_size), mmod);
-	*/
-	
 	GtkWidget *mcont = rf_mcontainer_new ();
 	gtk_widget_show (mcont);
 	gtk_container_add (GTK_CONTAINER (vbox1), mcont);
@@ -653,8 +552,6 @@ rf_interface_main_window_create (MediaModule *mmod) {
 	
 	if ( mmod->widget != NULL) {
 	
-		//gtk_container_add (GTK_CONTAINER (media_alignment), mmod->widget);
-		//gtk_fixed_put (GTK_FIXED (media_fixed), GTK_WIDGET (mmod->widget), 0, 0);
 		gtk_container_add (GTK_CONTAINER (mcont), mmod->widget);
 		rf_widget_add (mmod->widget, "rf media widget");
 		g_signal_connect (G_OBJECT (mmod->widget), "motion-notify-event", G_CALLBACK (rf_media_widget_motion_event), NULL);
