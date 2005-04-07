@@ -132,38 +132,6 @@ rf_media_mplayer_restart (GtkWidget *widget) {
 		rf_media_mplayer_launch (widget);
 }
 
-gpointer
-rf_media_mplayer_event_thread (gpointer data) {
-
-	RfMediaMplayer    *rmm = RF_MEDIA_MPLAYER (data);
-	GtkWidget         *widget = GTK_WIDGET (data);
-	XEvent             report;
-	
-	while (1) {
-		/*if (XCheckWindowEvent (GDK_WINDOW_XDISPLAY (rmm->mp_window), GDK_WINDOW_XID (rmm->mp_window), KeyPressMask | KeyReleaseMask | ButtonPressMask | ButtonReleaseMask | EnterWindowMask | LeaveWindowMask | PointerMotionMask | PointerMotionHintMask | Button1MotionMask | Button2MotionMask | Button3MotionMask | Button4MotionMask | Button5MotionMask | ButtonMotionMask | KeymapStateMask | ExposureMask | VisibilityChangeMask | StructureNotifyMask | ResizeRedirectMask | SubstructureNotifyMask | SubstructureRedirectMask | FocusChangeMask | PropertyChangeMask | ColormapChangeMask | OwnerGrabButtonMask, &report)) {
-			
-			//report.xany.window = GDK_WINDOW_XID (widget->window);
-			//report.xkey.window = GDK_WINDOW_XID (widget->window);
-			
-			//XSendEvent (GDK_WINDOW_XDISPLAY (widget->window), GDK_WINDOW_XID (widget->window), False, SubstructureRedirectMask, &report);
-			//g_printf ("\t>> wcisnieto klawisz <<\n");
-			g_printf ("event\n");
-		}*/
-		
-		/*GdkEvent *event = gdk_event_get ();
-
-		if (event != NULL)
-			
-		switch (event->type) {
-			case GDK_KEY_PRESS:
-			case GDK_KEY_RELEASE:
-				g_printf ("key press/release\n");
-				gdk_event_free (event);
-				break;
-		}*/
-	}
-}
-
 void
 rf_media_mplayer_open (GtkWidget *widget, gchar *file) {
 	
@@ -178,9 +146,6 @@ rf_media_mplayer_open (GtkWidget *widget, gchar *file) {
 	rmm->file = g_strdup (file);
 	pid = rf_media_mplayer_launch (GTK_WIDGET (widget));
 	
-	GThread *mplayer_thread = NULL;
-	
-	//mplayer_thread = g_thread_create (rf_media_mplayer_event_thread, rmm, FALSE, NULL);
 }
 
 gboolean
@@ -362,8 +327,6 @@ mp_window_filter (GdkXEvent *xevent, GdkEvent *event, gpointer user_data) {
 	widget = GTK_WIDGET (user_data);
 	nevent = gdk_event_copy (event);
 	
-	XEvent *xe = (XEvent *) xevent;
-	g_printf ("xevent: %d\n", xe->type);
 	switch (nevent->type) {
 		case GDK_MOTION_NOTIFY:
 			nevent->motion.window = widget->parent->window;
@@ -391,11 +354,8 @@ mp_window_filter (GdkXEvent *xevent, GdkEvent *event, gpointer user_data) {
 
 	}
 	
-	nevent->any.window = widget->parent->window;
-	//if (!changed) {
-	//	g_printf ("aaa\n");
-	//	return GDK_FILTER_CONTINUE;
-	//}
+	if (!changed)
+		return GDK_FILTER_CONTINUE;
 	
 	gdk_event_put (nevent);
 	return GDK_FILTER_REMOVE;
