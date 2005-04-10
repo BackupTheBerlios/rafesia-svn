@@ -456,6 +456,7 @@ cf_add_to_makefile "$_CF_DIR"  "\n\nclean:\n"
 for _mk_rcconf in $_CF_RCCONF; do
 	cf_add_to_makefile "$_CF_DIR"  "\t@cd $_CF_DIR/$_mk_rcconf && $MAKE clean\n"
 done
+cf_add_to_makefile "$_CF_DIR" "\t@rm -rf Makefile\n"
 
 cf_add_to_makefile "$_CF_DIR"  "\n\ninstall:\n"
 for _mk_rcconf in $_CF_RCCONF; do
