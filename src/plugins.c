@@ -364,7 +364,7 @@ rf_module_media_load (gchar *path_in, gchar *file) {
 			path = g_strdup_printf ("%s/%s", g_get_home_dir (), path_in+2);
 	
 	if (path == NULL)
-		g_strdup (path_in);
+		path = g_strdup (path_in);
 	
 	if (file != NULL) {
 		

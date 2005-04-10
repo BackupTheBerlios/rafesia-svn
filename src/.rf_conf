@@ -89,7 +89,7 @@ rf_conf_generate_makefile () {
 	
 	#> INSTALL:
 	cf_add_to_makefile "$1"  "\n\ninstall:\n"
-	cf_add_to_makefile "$1"  "\t@cp ./rafesia ${BINDIR%/}/\n"
+	cf_add_to_makefile "$1"  "\t@$INSTALL ./rafesia ${BINDIR%/}/\n"
 	
 	return 0
 	

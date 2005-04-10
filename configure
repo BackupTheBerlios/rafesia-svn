@@ -13,6 +13,7 @@ LIBDIR=PREFIX/lib/rafesia
 CC=gcc
 PKG_CONFIG=pkg-config
 MAKE=make
+INSTALL=install
 DEFIN=
 CFLAGS=
 INCLUDE=
@@ -328,6 +329,15 @@ else
 	cf_message " ... no\n" "mexit" "-1" "error on $CC\n"
 fi
 
+#> Looking for install
+cf_message "Checking for $INSTALL"
+if cf_command_exist "$INSTALL"; then
+	INSTALL=$_CF_COMMAND_EXIST
+	cf_message " ... yes\n"
+else
+	cf_message " ... no\n" "mexit" "-1" "error on $INSTALL"
+fi
+
 #> Looking for gtk+-2.0
 cf_message "Checking for GTK+-2.0 >= 2.6.0"
 if cf_package_check "atleast" "gtk+-2.0" "2.6.0"; then
@@ -463,10 +473,15 @@ for _mk_rcconf in $_CF_RCCONF; do
 done
 cf_add_to_makefile "$_CF_DIR" "\t@rm -rf Makefile\n"
 
-cf_add_to_makefile "$_CF_DIR"  "\n\ninstall:\n"
+cf_add_to_makefile "$_CF_DIR" "\n\ninstall:\n"
+cf_add_to_makefile "$_CF_DIR" "\t@$INSTALL -d $PREFIX\n"
+cf_add_to_makefile "$_CF_DIR" "\t@$INSTALL -d $BINDIR\n"
+cf_add_to_makefile "$_CF_DIR" "\t@$INSTALL -d $INCLUDEDIR\n"
+cf_add_to_makefile "$_CF_DIR" "\t@$INSTALL -d $LIBDIR\n"
 for _mk_rcconf in $_CF_RCCONF; do
 	cf_add_to_makefile "$_CF_DIR"  "\t@cd $_CF_DIR/$_mk_rcconf && $MAKE install\n"
 done
+cf_add_to_makefile "$_CF_DIR" "\t@echo Rafesia installation sucessed\n"
 
 
 #> Endinf output

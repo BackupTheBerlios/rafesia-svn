@@ -216,7 +216,7 @@ main (gint argc, gchar *argv[]) {
 	mediamod = rf_module_media_load (RF_LIBDIR, NULL);
 	if (mediamod == NULL) {
 		
-		g_error ("No media module\n");
+		g_message ("No media module\n");
 		return 0;
 		
 	}

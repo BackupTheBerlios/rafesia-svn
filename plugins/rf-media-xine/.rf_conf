@@ -102,7 +102,7 @@ rf_conf_generate_makefile () {
 	cf_add_to_makefile "$1"  "\t@rm Makefile"
 
 	cf_add_to_makefile "$1"  "\n\ninstall:\n"
-	cf_add_to_makefile "$1"  "\t@cp ./rf-media-xine.so ${LIBDIR%/}/\n"
+	cf_add_to_makefile "$1"  "\t@$INSTALL ./rf-media-xine.so ${LIBDIR%/}/\n"
 	
 	return 0
 	
