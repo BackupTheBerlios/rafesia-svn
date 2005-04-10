@@ -22,7 +22,7 @@
 #include <gdk/gdkkeysyms.h>
 #include "../rafesia.h"
 #include "../core/internal.h"
-#include "../plugins/plugins.h"
+#include <rafesia/plugins.h>
 #include "rf-widget-mixer.h"
 
 MediaModule *get_mediamodule (void);

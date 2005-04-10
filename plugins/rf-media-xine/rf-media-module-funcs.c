@@ -20,7 +20,7 @@
 #include <gtk/gtk.h>
 #include <xine.h>
 #include "rf-media-xine.h"
-#include "../plugins.h"
+#include <rafesia/plugins.h>
 
 gint
 open (MediaModule *module, gchar *mrl) {

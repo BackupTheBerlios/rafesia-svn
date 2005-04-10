@@ -1,0 +1,50 @@
+#!/bin/sh
+rf_conf_info () {
+	_RF_CONF_OPTIONS_NUM=0
+}
+
+rf_conf_chopt () {
+	return 1
+}
+
+rf_conf_chdep () {
+	return 0
+}
+
+rf_conf_mkopt () {
+	return 0
+}
+
+rf_conf_generate_makefile () {
+	
+	if [ -e $1/Makefile ]; then
+		rm -rf $1/Makefile
+	fi
+	
+	cf_add_to_makefile "$1" "# Rafesia generated Makefile\n\n"
+	
+	#> ALL:
+	cf_add_to_makefile "$1"  "all:\n"
+	cf_add_to_makefile "$1"  "\n"
+	
+	#> CLEAN:
+	cf_add_to_makefile "$1"  "\n\nclean:\n"
+	cf_add_to_makefile "$1"  "\t@rm Makefile"
+	
+	#> INSTALL:
+	cf_add_to_makefile "$1"  "\n\ninstall:\n"
+	cf_add_to_makefile "$1"  "\t@cp ./rafesia/plugins.h ${INCLUDEDIR%/}/\n"
+	
+	return 0
+	
+}
+
+rf_conf_unset () {
+	unset rf_conf_info
+		unset _RF_CONF_OPTIONS_NUM
+	unset rf_conf_chopt
+	unset rf_conf_chdep
+	unset rf_conf_mkopt
+	unset rf_conf_generate_makefile
+	unset rf_conf_unset
+}

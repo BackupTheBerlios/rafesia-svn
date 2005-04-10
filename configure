@@ -1,0 +1,483 @@
+#!/bin/sh
+#################### RF_CONF DEPENDENCY
+_CF_RCCONF="/src/ /include/"
+_CF_MK_PLUGINS="rf-media-mplayer"
+
+###################### DEFAULT SETTINGS
+PREFIX=/usr/local
+BINDIR=PREFIX/bin
+INCLUDEDIR=PREFIX/include/rafesia
+LIBDIR=PREFIX/lib/rafesia
+
+#################### COMPILATOR OPTIONS
+CC=gcc
+PKG_CONFIG=pkg-config
+MAKE=make
+DEFIN=
+CFLAGS=
+INCLUDE=
+
+############################# FUNCTIONS
+cf_message () {
+	
+	if [ "$#" = "1" ]; then
+		printf "$1"
+		
+	else
+		printf "$1"
+		case "$2" in 
+			"exit")
+				exit $3;;
+				
+			"mexit")
+				printf "$4"
+				exit $3;;
+				
+		esac
+		
+	fi
+	
+}
+
+cf_add_rcconf () {
+	
+	for foo in $_CF_RCCONF; do
+		if [ $foo = $1 ]; then
+			return 0
+		fi
+	done
+	
+	_CF_RCCONF="$_CF_RCCONF $1"
+	unset foo
+	return 0
+}
+
+cf_rm_rcconf () {
+	
+	_TMP=""
+	
+	for foo in $_CF_RCCONF; do
+		if [ $foo != $1 ] && [ $foo != "${1%/}" ] && [ $foo != "$1/" ]; then
+			_TMP="$_TMP $foo"
+		fi
+	done
+	
+	_CF_RCCONF=$_TMP
+	unset foo
+	unset _TMP
+	return 0
+	
+}
+
+cf_add_plugin () {
+	
+	for foo in $_CF_MK_PLUGINS; do
+		if [ $foo = $1 ]; then
+			return 0
+		fi
+	done
+	
+	_CF_MK_PLUGINS="$_CF_MK_PLUGINS $1"
+	unset foo
+	return 0
+	
+}
+
+cf_rm_plugin () {
+	
+	_TMP=""
+	
+	for foo in $_CF_MK_PLUGINS; do
+		if [ $foo != $1 ]; then
+			_TMP="$_TMP $foo"
+		fi
+	done
+	
+	_CF_MK_PLUGINS=$_TMP
+	unset foo
+	unset _TMP
+	return 0
+}
+
+cf_search_plugin () {
+	
+	for foo in $_CF_MK_PLUGINS; do
+		if [ $foo = $1 ]; then
+			unset foo
+			return 0
+		fi
+	done
+	
+	unset foo
+	return 1
+	
+}
+
+cf_print_help () {
+	
+	cf_message "USAGE: ./configure [OPTIONS]...\n"
+	cf_message "\n"
+	cf_message "This script creates necessary configuration files to build/install.\n"
+	cf_message "\n"
+	cf_message "Main options:\n"
+	cf_message "  --prefix=[path]\t Base path for build/install.\tDefault: $PREFIX\n"
+	eval tmp=\$$BINDIR
+	cf_message "  --bindir=[path]\t Directory for binaries.\tDefault: $tmp\n"
+	eval tmp=\$$INCLUDEDIR
+	cf_message "  --includedir=[path]\t Directory for include files.\tDefault: $tmp\n"
+	eval tmp=\$$LIBDIR
+	cf_message "  --libdir=[path]\t Directory for libraries.\tDefault: $tmp\n"
+	unset tmp
+	cf_message "  --no-heads\t\t Install without Rafesia headers.  Default: No\n"
+	cf_message "  --debug\t\t Enable gdb compilation.\n"
+	cf_message "  --help\t\t This help text.\n"
+	cf_message "\n"
+	cf_message "Dependency options:\n"
+	cf_message "  --enable-gnome\t Not working.  Default: No\n"
+	cf_message "  --enable-gconf\t Not working.  Default: No\n"
+	
+	if [ "$_CF_PLUGINS" != "" ]; then
+		
+		cf_message "\n"
+		cf_message "Module options:\n"
+		
+		for _cf_plug in $_CF_PLUGINS; do
+			source $_CF_DIR/plugins/$_cf_plug/.rf_conf
+			rf_conf_info
+			
+			if [ "$_RF_CONF_OPTIONS_NUM" != "0" ]; then
+				
+				_NUM=0
+				while [ "$_NUM" != "$_RF_CONF_OPTIONS_NUM" ]; do
+					cf_message "  ${_RF_CONF_OPTIONS[$_NUM]}\t ${_RF_CONF_OPTIONS_INFO[$_NUM]}\n"
+					_NUM=$(($_NUM+1))
+				done
+				unset _NUM
+				
+			fi
+				
+			rf_conf_unset
+		
+		done
+		unset _cf_plug
+		
+	fi
+	
+	cf_message "\n"
+	cf_message "Rafesia project (c) 2005\t License: GPL\n"
+	cf_message "Homepage: http://developer.berlios.de/projects/rafesia/\n"
+	
+	exit 0
+	
+}
+
+cf_command_exist () {
+
+	set `whereis $*`
+	
+	if [ "$2" = "" ]; then
+		return 1
+		
+	else
+		_CF_COMMAND_EXIST=$2
+		return 0
+		
+	fi
+	
+}
+
+cf_package_check () {
+
+	if [ "$#" = "1" ]; then 
+		return `$PKG_CONFIG --exists $1`
+	
+	elif [ "$#" = "2" ]; then {
+		
+		if [ "$1" = "exists" ]; then
+			return `$PKG_CONFIG --exists $2`
+			
+		else
+			return -1
+			
+		fi
+		
+	} elif [ "$#" = "3" ];then {
+		
+		case "$1" in
+			"atleast") return `$PKG_CONFIG --atleast-version=$3 $2`;;
+			"exact") return `$PKG_CONFIG --exact-version=$3 $2`;;
+			"max") return `$PKG_CONFIG --max-version=$3 $2`;;
+		esac
+		
+	} fi
+
+	return -1
+	
+}
+
+cf_add_to_include () {
+	
+	INCLUDE="$INCLUDE -I$1"
+	
+}
+
+cf_add_to_cflags () {
+	
+	CFLAGS="$CFLAGS $1"
+	
+}
+
+cf_add_to_defin () {
+	
+	if [ $# = 2 ]; then
+		DEFIN="$DEFIN -D$1 $2"
+	else
+		DEFIN="$DEFIN -D$1"
+	fi
+	
+}
+
+cf_gcc_generate () {
+	
+	if [ $1 != "RM" ]; then
+		_GCC_GENERATE_ECHO="\t@echo \" $1   $5\""
+		_GCC_GENERATE_RETURN="\t@$CC $DEFIN $CFLAGS $INCLUDE $4 $3 -o $2"
+	else
+		_GCC_GENERATE_ECHO="\t@echo \" $1   $3\""
+		_GCC_GENERATE_RETURN="\t@rm $2"
+	fi
+	
+}
+
+cf_add_to_makefile () {
+	
+	printf "$2" >> $1/Makefile
+	
+}
+
+########################## MAIN PROGRAM
+#> Rafesia config file configuration
+_CF_CMD=${0%./configure}
+if [ "$_CF_CMD" = "" ]; then
+	_CF_DIR=`pwd`
+else
+	_CF_PWD=`pwd`
+	_CF_CMD=${_CF_CMD#$_CF_PWD}
+	_CF_CMD=${_CF_CMD#./}
+	_CF_DIR="$PWD/$_CF_CMD"
+	_CF_DIR=${_CF_DIR%configure}
+	unset _CF_PWD
+fi
+unset _CF_CMD
+
+cf_add_to_include "$_CF_DIR/include"
+
+#> Plugins detection
+_CF_LS_PLUGINS=`ls $_CF_DIR/plugins`
+for _cf_plug in $_CF_LS_PLUGINS; do {
+	
+	if [ -d $_CF_DIR/plugins/$_cf_plug ] && [ -f $_CF_DIR/plugins/$_cf_plug/.rf_conf ]; then
+		_CF_PLUGINS="$_CF_PLUGINS $_cf_plug"
+	fi
+	
+} done
+unset _cf_plug
+
+#> Searching for --help option
+tmp=1
+while [ "$tmp" -le $# ]; do {
+	
+	eval var='$'$tmp
+	case "$var" in
+		"--help") cf_print_help;;
+		"-h") cf_print_help;;
+	esac
+	
+	tmp=$(($tmp+1))
+
+} done
+unset var
+unset tmp
+
+cf_message "Configuring Rafesia ...\n\n"
+
+#> Looking for pkg-config
+cf_message "Checking for $PKG_CONFIG"
+if cf_command_exist "$PKG_CONFIG"; then
+	PKG_CONFIG=$_CF_COMMAND_EXIST
+	cf_message " ... yes\n"
+else
+	cf_message " ... no\n" "mexit" "-1" "error on $PKG_CONFIG"
+fi
+
+#> Looking for make
+cf_message "Checking for $MAKE"
+if cf_command_exist "$MAKE"; then
+	MAKE=$_CF_COMMAND_EXIST
+	cf_message " ... yes\n"
+else
+	cf_message " ... no\n" "mexit" "-1" "error on $MAKE"
+fi
+
+#> looking for gcc
+cf_message "Checking for $CC"
+if cf_command_exist "$CC"; then
+	CC=$_CF_COMMAND_EXIST
+	cf_message " ... yes\n"
+else
+	cf_message " ... no\n" "mexit" "-1" "error on $CC\n"
+fi
+
+#> Looking for gtk+-2.0
+cf_message "Checking for GTK+-2.0 >= 2.6.0"
+if cf_package_check "atleast" "gtk+-2.0" "2.6.0"; then
+	cf_message " ... yes\n"
+else
+	cf_message " ... no\n" "mexit" "-1" "error on gtk+-2.0\n"
+fi
+
+#> Options configuring
+tmp=1
+while [ "$tmp" -le $# ]; do {
+	
+	eval var='$'$tmp
+	case "$var" in
+		
+		# Main Options:
+		--prefix=*) PREFIX=${var#--prefix=};;
+		--bindir=*) BINDIR=${var#--bindir=};;
+		--includedir=*) INCLUDEDIR=${var#--includedir=};;
+		--libdir=*) LIBDIR=${var#--libdir=};;
+		--no-heads) cf_rm_rcconf "/include/";;
+		"--debug") cf_add_to_cflags "-g";;
+		"--help") cf_print_help;;
+		"-h") cf_print_help;;	
+		
+		# Dependency options:
+		"--enable-gnome") ;;
+		"--enable-gconf") ;;
+		
+		# Unknown/Modules options:
+		*) {
+			
+			if [ "$_CF_PLUGINS" != "" ]; then
+				for _cf_plug in $_CF_PLUGINS; do
+					source $_CF_DIR/plugins/$_cf_plug/.rf_conf
+					
+					if rf_conf_chopt $var; then
+						if rf_conf_chdep $var; then
+							rf_conf_mkopt $var /plugins/$_cf_plug/
+							_CF_OPTF="Yes"
+							rf_conf_unset
+							break
+						fi
+						break
+					fi
+					rf_conf_unset
+				done
+			fi
+
+			if [ "$_CF_OPTF" != "Yes" ]; then
+				cf_message "Error option: $var\n\n"
+				cf_print_help
+			fi
+			unset _CF_OPTF
+			
+		};;
+	esac
+	
+	tmp=$(($tmp+1))
+} done
+unset var
+unset tmp
+
+case "$BINDIR" in
+	PREFIX*) eval BINDIR=\$$BINDIR;;
+esac
+
+case "$LIBDIR" in
+	PREFIX*) eval LIBDIR=\$$LIBDIR;;
+esac
+
+case "$INCLUDEDIR" in
+	PREFIX*) eval INCLUDEDIR=\$$INCLUDEDIR;;
+esac
+
+#> Adding Plugins to CF_RCCONF
+for pl2rcc in $_CF_MK_PLUGINS; do
+
+	if [ -e $_CF_DIR/plugins/$pl2rcc/.rf_conf ]; then
+		source $_CF_DIR/plugins/$pl2rcc/.rf_conf
+		
+		if ! rf_conf_enable_plugin $pl2rcc; then
+			rf_conf_unset
+			exit 1
+		fi
+		
+		_CF_ADDED_PLUG="$_CF_ADDED_PLUG $pl2rcc"
+		rf_conf_unset
+	 fi
+	
+done
+unset foo
+
+MAKE="$MAKE -s"
+
+#> Creating Makefiles
+for foo in $_CF_RCCONF; do
+	
+	if [ -e ${_CF_DIR%/}/${foo#/}/.rf_conf ]; then
+		source ${_CF_DIR%/}/${foo#/}/.rf_conf
+		
+		if ! rf_conf_generate_makefile ${_CF_DIR%/}/${foo#/}; then
+			
+			cf_message "error generating ${foo%/}/Makefile"
+			exit 1
+			
+		fi
+		
+		rf_conf_unset
+	fi
+	
+done
+
+#> Main Makefile
+if [ -e $_CF_DIR/Makefile ]; then
+	rm -rf $_CF_DIR/Makefile
+fi
+
+cf_add_to_makefile "$_CF_DIR" "# Rafesia generated Makefile\n\n"
+cf_add_to_makefile "$_CF_DIR"  "all:\n"
+for _mk_rcconf in $_CF_RCCONF; do
+	cf_add_to_makefile "$_CF_DIR"  "\t@cd $_CF_DIR/$_mk_rcconf && $MAKE\n"
+done
+
+cf_add_to_makefile "$_CF_DIR"  "\n\nclean:\n"
+for _mk_rcconf in $_CF_RCCONF; do
+	cf_add_to_makefile "$_CF_DIR"  "\t@cd $_CF_DIR/$_mk_rcconf && $MAKE clean\n"
+done
+
+cf_add_to_makefile "$_CF_DIR"  "\n\ninstall:\n"
+for _mk_rcconf in $_CF_RCCONF; do
+	cf_add_to_makefile "$_CF_DIR"  "\t@cd $_CF_DIR/$_mk_rcconf && $MAKE install\n"
+done
+
+
+#> Endinf output
+cf_message "\n"
+cf_message "Rafesia configuration ...\n\n"
+cf_message "  prefix dir -\t$PREFIX\n"
+cf_message "  bin dir -\t$BINDIR\n"
+cf_message "  include dir -\t$INCLUDEDIR\n"
+cf_message "  lib dir -\t$LIBDIR\n"
+cf_message "\n"
+if [ "" != "$_CF_ADDED_PLUG" ]; then
+	cf_message "Plugins added:\n$_CF_ADDED_PLUG\n\n"
+	unset _CF_ADDED_PLUG
+fi
+cf_message "Now type 'make' for making process.\n"
+cf_message "Then type 'make install' for installation process. (as root)\n"
+cf_message "\n\n"
+cf_message "Rafesia project (c) 2005\t License: GPL\n"
+cf_message "Homepage: http://developer.berlios.de/projects/rafesia/\n"
+

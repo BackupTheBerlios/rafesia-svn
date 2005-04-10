@@ -18,8 +18,8 @@
  */
  
 #include <gtk/gtk.h>
-#include "plugins.h"
-#include "../rafesia.h"
+#include <rafesia/plugins.h>
+#include "rafesia.h"
 
 GtkWidget *rf_module_chooser_info;
 

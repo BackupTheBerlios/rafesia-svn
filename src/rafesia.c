@@ -20,7 +20,7 @@
 
 #include <gtk/gtk.h>
 #include "rafesia.h"
-#include "plugins/plugins.h"
+#include <rafesia/plugins.h>
 #include "ui/rf-window-main.h"
 
 GMainLoop         *mainloop;
