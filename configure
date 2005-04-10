@@ -230,7 +230,7 @@ cf_add_to_cflags () {
 cf_add_to_defin () {
 	
 	if [ $# = 2 ]; then
-		DEFIN="$DEFIN -D$1 $2"
+		DEFIN="$DEFIN -D$1=\"\\\\\"$2\\\\\"\""
 	else
 		DEFIN="$DEFIN -D$1"
 	fi
@@ -402,6 +402,11 @@ esac
 case "$INCLUDEDIR" in
 	PREFIX*) eval INCLUDEDIR=\$$INCLUDEDIR;;
 esac
+
+cf_add_to_defin "RF_PREFIX" $PREFIX
+cf_add_to_defin "RF_BINDIR" $BINDIR
+cf_add_to_defin "RF_LIBDIR" $LIBDIR
+cf_add_to_defin "RF_INCLUDEDIR" $INCLUDEDIR
 
 #> Adding Plugins to CF_RCCONF
 for pl2rcc in $_CF_MK_PLUGINS; do

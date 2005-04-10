@@ -193,7 +193,7 @@ main (gint argc, gchar *argv[]) {
 	g_log_set_handler (NULL, G_LOG_LEVEL_ERROR | G_LOG_LEVEL_CRITICAL | G_LOG_LEVEL_WARNING |
 			G_LOG_LEVEL_MESSAGE | G_LOG_LEVEL_INFO | G_LOG_LEVEL_DEBUG,
 			(GLogFunc) rf_log_handler, NULL);
-
+	
 	scr_init ();
 
 	if (!g_module_supported ())
@@ -213,7 +213,7 @@ main (gint argc, gchar *argv[]) {
 	
 	g_set_application_name ("Rafesia Movie Player");
 	
-	mediamod = rf_module_media_load ("./plugins", NULL);
+	mediamod = rf_module_media_load (RF_LIBDIR, NULL);
 	
 	maincontext = g_main_context_default ();
 	mainloop = g_main_loop_new (maincontext, FALSE);
@@ -221,7 +221,7 @@ main (gint argc, gchar *argv[]) {
 	
 	g_timeout_add (100, rf_gui_create, mrl);
 	g_main_loop_run (mainloop);
-
+	
 	return (0);
 
 }

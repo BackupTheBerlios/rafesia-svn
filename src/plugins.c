@@ -357,7 +357,7 @@ rf_module_media_load (gchar *path, gchar *file) {
 	
 	if (path == NULL)
 		return (NULL);
-
+	
 	if (file != NULL) {
 		filename = g_strdup_printf ("%s/%s", path, file);
 		return (rf_module_media_load_from_file (filename));
