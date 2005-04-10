@@ -87,7 +87,7 @@ rf_module_media_load_from_file (gchar *filename) {
 	mmod->module = g_module_open (mmod->filename, G_MODULE_BIND_LAZY);
 	if (mmod->module == NULL) {
 		g_printf ("%s\n", g_module_error() );
-		return;
+		return NULL;
 	}
 	
 	g_module_symbol (mmod->module, "get_module_info", (gpointer *)&get_module_info);
@@ -114,7 +114,7 @@ rf_module_media_load_from_file (gchar *filename) {
 		g_error ("cannot found init_plugin function\n");
 		return (NULL);
 	}
-
+	
 	init (mmod);
 
 	g_module_symbol (mmod->module, "open", (gpointer *)&(mmod->open_mrl));
@@ -308,6 +308,9 @@ rf_media_module_search (gchar *path) {
 	gchar      *file = NULL;
 	GDir       *plug_dir = g_dir_open (path, 0, NULL);
 	
+	if (plug_dir == NULL)
+		return NULL;
+	
 	for (file = (gchar *)g_dir_read_name (plug_dir); file != NULL; file= (gchar *) g_dir_read_name (plug_dir))
 		if (g_str_has_suffix (file, ".so") == TRUE) {
 			ModuleInfo      *(*get_module_info) (gint (*ModuleInfoFunc) (ModuleInfo *info, gchar *name, gpointer var));
@@ -338,36 +341,97 @@ rf_media_module_search (gchar *path) {
 
 	switch (g_slist_length (plugins)) {
 		case (0):
-			return (NULL);
+			return NULL;
 		case (1): {
 			ModuleInfo *info = (ModuleInfo *) plugins->data;
-			return (info->filename);
+			return info->filename;
 		}
 		default:
 			rf_module_chooser (plugins);
-			return (NULL);
+			return NULL;
 	}
-
+	
 }
 
 MediaModule *
 rf_module_media_load (gchar *path, gchar *file) {
 	
-	gchar           *filename;
-	
-	if (path == NULL)
-		return (NULL);
+	gchar           *filename = NULL;
 	
 	if (file != NULL) {
-		filename = g_strdup_printf ("%s/%s", path, file);
-		return (rf_module_media_load_from_file (filename));
-	}
 		
+		filename = g_strdup_printf ("%s/%s", path, file);
+		
+		if (filename = NULL) {
+			MediaModule *mmod = NULL;
+			
+			mmod = rf_module_media_load_from_file (filename);
+			g_free (filename);
+			
+			return mmod;
+		} else {
+			g_free (filename);
+			file = NULL;
+			filename = NULL;
+		}
+	}
+	
 	filename = rf_media_module_search (path);
-	if (filename == NULL)
-		return (NULL);
+	if (filename != NULL) {
+		MediaModule *mmod;
+		
+		mmod = rf_module_media_load_from_file (filename);
+		g_free (filename);
+		filename = NULL;
+		
+		return mmod;
+		
+	} else {
+		g_free (filename);
+		filename = NULL;
+		path = NULL;
+	}
 	
-	return (rf_module_media_load_from_file (filename));
+	if (path == NULL) {
+		
+		path = g_strdup ("~/.rafesia/plugins/");
+		filename = rf_media_module_search (path);
+		if (filename != NULL) {
+			g_free (path);
+			return rf_module_media_load_from_file (filename);
+		}
+		
+		g_free (path);
+
+		path = g_strdup ("/lib/rafesia/");
+		filename = rf_media_module_search (path);
+		if (filename != NULL) {
+			g_free (path);
+			return rf_module_media_load_from_file (filename);
+		}
+		g_free (path);
+		
+		path = g_strdup ("/usr/lib/rafesia/");
+		filename = rf_media_module_search (path);
+		if (filename != NULL) {
+			g_free (path);
+			return rf_module_media_load_from_file (filename);
+		}
+		g_free (path);
+		
+		path = g_strdup ("/usr/locale/lib/rafesia/");
+		filename = rf_media_module_search (path);
+		if (filename != NULL) {
+			g_free (path);
+			return rf_module_media_load_from_file (filename);
+		}
+		g_free (path);
+		
+		return NULL;
+		
+	}
 	
+	return NULL;
+		
 }
 
