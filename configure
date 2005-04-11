@@ -462,12 +462,14 @@ if [ -e $_CF_DIR/Makefile ]; then
 fi
 
 cf_add_to_makefile "$_CF_DIR" "# Rafesia generated Makefile\n\n"
-cf_add_to_makefile "$_CF_DIR"  "all:\n"
+cf_add_to_makefile "$_CF_DIR" "all:\n"
+cf_add_to_makefile "$_CF_DIR" "\t@echo\t Compiling rafesia, please wait ...\n" 
 for _mk_rcconf in $_CF_RCCONF; do
 	cf_add_to_makefile "$_CF_DIR"  "\t@cd $_CF_DIR/$_mk_rcconf && $MAKE\n"
 done
+cf_add_to_makefile "$_CF_DIR" "\t@echo \n\n"
 
-cf_add_to_makefile "$_CF_DIR"  "\n\nclean:\n"
+cf_add_to_makefile "$_CF_DIR" "\n\nclean:\n"
 for _mk_rcconf in $_CF_RCCONF; do
 	cf_add_to_makefile "$_CF_DIR"  "\t@cd $_CF_DIR/$_mk_rcconf && $MAKE clean\n"
 done
@@ -500,5 +502,5 @@ cf_message "Now type 'make' for making process.\n"
 cf_message "Then type 'make install' for installation process. (as root)\n"
 cf_message "\n\n"
 cf_message "Rafesia project (c) 2005\t License: GPL\n"
-cf_message "Homepage: http://developer.berlios.de/projects/rafesia/\n"
+cf_message "Homepage: http://developer.berlios.de/projects/rafesia/\n\n"
 

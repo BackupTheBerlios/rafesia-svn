@@ -316,8 +316,8 @@ mp_window_filter (GdkXEvent *xevent, GdkEvent *event, gpointer user_data) {
 	
 	RfMediaMplayer      *rmm;
 	GtkWidget           *widget;
-	GdkEvent            *nevent;
-	gboolean             changed = FALSE;
+	XEvent              *xev;
+	gint                 result = GDK_FILTER_REMOVE;
 	
 	g_return_if_fail (xevent != NULL);
 	g_return_if_fail (event != NULL);
@@ -325,41 +325,114 @@ mp_window_filter (GdkXEvent *xevent, GdkEvent *event, gpointer user_data) {
 	
 	rmm = RF_MEDIA_MPLAYER (user_data);
 	widget = GTK_WIDGET (user_data);
-	nevent = gdk_event_copy (event);
 	
-	switch (nevent->type) {
-		case GDK_MOTION_NOTIFY:
-			nevent->motion.window = widget->parent->window;
-			changed = TRUE;
+	xev = (XEvent *) xevent;
+	xev->xany.window = GDK_WINDOW_XWINDOW (widget->parent->window);
+	
+	switch (xev->type) {
+		case KeyPress:
+		case KeyRelease:
+			xev->xkey.window = GDK_WINDOW_XWINDOW (widget->window);
 			break;
 			
+		case ButtonPress:
+		case ButtonRelease:
+			xev->xbutton.window  = GDK_WINDOW_XWINDOW (widget->window);
+			break;
+			
+		case MotionNotify:
+		case EnterNotify:
+		case LeaveNotify:
+			xev->xmotion.window = GDK_WINDOW_XWINDOW (widget->window);
+			break;
+
+		case FocusIn:
+		case FocusOut:
+		case KeymapNotify:
+		case Expose:
+		case GraphicsExpose:
+		case NoExpose:
+		case VisibilityNotify:
+		case CreateNotify:
+		case DestroyNotify:
+		case UnmapNotify:
+		case MapNotify:
+		case MapRequest:
+		case ReparentNotify:
+		case ConfigureNotify:
+		case ConfigureRequest:
+		case GravityNotify:
+		case ResizeRequest:
+		case CirculateNotify:
+		case CirculateRequest:
+		case PropertyNotify:
+		case SelectionClear:
+		case SelectionRequest:
+		case SelectionNotify:
+		case ColormapNotify:
+		case ClientMessage:
+		case MappingNotify:
+			return GDK_FILTER_REMOVE;
+	}
+	
+	return result;
+	
+}
+
+void
+mp_cb (GdkEvent *event, gpointer data) {
+	
+	RfMediaMplayer *rmm = RF_MEDIA_MPLAYER (data);
+	GtkWidget *widget = GTK_WIDGET (data);
+	
+	//if (event->any.window == rmm->mp_window)
+	//	event->any.window = rmm->mp_window;
+	
+	switch (event->type) {
+		
+		/*case GDK_MOTION_NOTIFY:
+			event->any.window = widget->window;
+			event->motion.window = widget->window;
+			break;
+		*/	
+		/*
 		case GDK_BUTTON_PRESS:
 		case GDK_2BUTTON_PRESS:
 		case GDK_3BUTTON_PRESS:
 		case GDK_BUTTON_RELEASE:
-			nevent->button.window = widget->parent->window;
-			changed = TRUE;
+			g_printf ("button\n");
+			event->button.window = widget->window;
 			break;
-			
+		*/
+		
 		case GDK_KEY_PRESS:
 		case GDK_KEY_RELEASE:
-			nevent->key.window = widget->parent->window;
-			changed = TRUE;
+			g_printf ("key\n");
+			return;
+			if (event->key.window == rmm->mp_window) {
+				
+				event->any.window = widget->parent->window;
+				event->key.window = widget->parent->window;
+				
+			}
 			break;
 			
-		case GDK_SCROLL:
-			nevent->scroll.window = widget->parent->window;
-			changed = TRUE;
-			break;
-
+		//case GDK_ENTER_NOTIFY:
+		//case GDK_LEAVE_NOTIFY:
+			
+		//case GDK_FOCUS_CHANGE:
+		//	event->focus_change.window = widget->window;
+		//	break;
+			
+		//case GDK_SCROLL:
+		//	event->scroll.window = widget->window;
+		//	break;
 	}
 	
-	if (!changed)
-		return GDK_FILTER_CONTINUE;
+	gtk_main_do_event (event);
 	
-	gdk_event_put (nevent);
-	return GDK_FILTER_REMOVE;
 }
+
 
 static void
 rf_media_mplayer_realize (GtkWidget *widget) {
@@ -402,8 +475,9 @@ rf_media_mplayer_realize (GtkWidget *widget) {
 	this->mp_window              = gdk_window_new (widget->window, &mp_attrib, GDK_VISIBILITY_NOTIFY_MASK);
 	
 	widget->style                = gtk_style_attach (widget->style, widget->window);
-
+	
 	//gdk_window_add_filter (GDK_WINDOW (this->mp_window), mp_window_filter, this);
+	//gdk_event_handler_set (mp_cb, this, NULL);
 	gdk_window_set_user_data (this->mp_window, widget);
 	
 	GTK_WIDGET_SET_FLAGS (widget, GTK_REALIZED);

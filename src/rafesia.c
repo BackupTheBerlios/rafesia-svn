@@ -214,12 +214,12 @@ main (gint argc, gchar *argv[]) {
 	g_set_application_name ("Rafesia Movie Player");
 	
 	mediamod = rf_module_media_load (RF_LIBDIR, NULL);
-	if (mediamod == NULL) {
+	/*if (mediamod == NULL) {
 		
 		g_message ("No media module\n");
 		return 0;
 		
-	}
+	}*/
 	
 	maincontext = g_main_context_default ();
 	mainloop = g_main_loop_new (maincontext, FALSE);
