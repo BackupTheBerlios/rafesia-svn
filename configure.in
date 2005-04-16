@@ -1,0 +1,60 @@
+AC_INIT(rafesia, 0.0.0)
+AM_INIT_AUTOMAKE
+AC_CONFIG_HEADERS(config.h)
+
+# Checking for programs
+AC_PROG_CC
+AC_PROG_INSTALL
+
+# Checking for libraries
+PKG_CHECK_MODULES(GTK, gtk+-2.0 gdk-2.0 glib-2.0 gthread-2.0,,exit)
+AC_SUBST(GTK_LIBS)
+AC_SUBST(GTK_CFLAGS)
+
+# Checking options
+AC_ARG_WITH(mplayer, AS_HELP_STRING([--without-mplayer], [build without MPlayer plugin]))
+if test "x$with_mplayer" != "xno"; then
+	AC_PATH_PROG(is_mplayer, mplayer, no)
+	with_mplayer=yes
+else
+	with_mplayer=no
+fi
+
+AC_ARG_WITH(xine, AS_HELP_STRING([--with-xine], [build with Xine plugin]), , )
+if test "x$with_xine" = "xyes"; then
+	PKG_CHECK_MODULES(XINE, [libxine])
+	AC_SUBST(XINE_LIBS)
+	AC_SUBST(XINE_CFLAGS)
+	with_xine=yes
+else
+	with_xine=no
+fi
+
+AM_CONDITIONAL(BUILD_MPLAYER, test "$with_mplayer" = "yes")
+AM_CONDITIONAL(BUILD_XINE, test "$with_xine" = "yes")
+
+AC_OUTPUT(\
+	Makefile\
+	src/Makefile\
+	include/Makefile\
+	plugins/Makefile\
+	plugins/rf-media-mplayer/Makefile\
+	plugins/rf-media-xine/Makefile)
+
+echo ""
+echo "Rafesia configuration ..."
+echo ""
+echo   prefix - $prefix
+echo   bindir - $bindir
+echo   includedir - $includedir
+echo   libdir - $libdir
+echo ""
+echo Build plugin Mplayer: [$with_mplayer]
+echo Build plugin Xine: [$with_xine]
+echo ""
+echo "Now type 'make' for making process."
+echo "Then type 'make install' for installation process. (as root)"
+echo ""
+echo "Rafesia project (c) 2005         License: GPL"
+echo "Homepage: http://developer.berlios.de/projects/rafesia/"
+

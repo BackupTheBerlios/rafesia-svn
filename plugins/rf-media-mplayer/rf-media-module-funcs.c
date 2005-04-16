@@ -18,7 +18,6 @@
  */
 
 #include <gtk/gtk.h>
-#include <xine.h>
 #include "rf-media-mplayer.h"
 #include <rafesia/plugins.h>
 

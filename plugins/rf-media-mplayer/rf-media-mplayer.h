@@ -3,7 +3,6 @@
 
 #include <gtk/gtk.h>
 #include <gdk/gdkx.h>
-#include <xine.h>
 
 G_BEGIN_DECLS
 #define RF_MEDIA_MPLAYER_TYPE            (rf_media_mplayer_get_type ())

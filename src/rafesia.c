@@ -206,20 +206,21 @@ main (gint argc, gchar *argv[]) {
 
 	g_thread_init (NULL);
 	gdk_threads_init ();
-
-
 	
 	gtk_init (&argc, &argv);
 	
 	g_set_application_name ("Rafesia Movie Player");
 	
 	mediamod = rf_module_media_load (RF_LIBDIR, NULL);
-	/*if (mediamod == NULL) {
+	if (mediamod == NULL) {
 		
 		g_message ("No media module\n");
 		return 0;
 		
-	}*/
+	}
+	
+	if (mediamod == (MediaModule *) -1)
+		mediamod = NULL;
 	
 	maincontext = g_main_context_default ();
 	mainloop = g_main_loop_new (maincontext, FALSE);

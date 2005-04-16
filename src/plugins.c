@@ -350,7 +350,7 @@ rf_media_module_search (gchar *path) {
 		}
 		default:
 			rf_module_chooser (plugins);
-			return NULL;
+			return (gchar *)-1;
 	}
 	
 }
@@ -385,6 +385,9 @@ rf_module_media_load (gchar *path_in, gchar *file) {
 	}
 	
 	filename = rf_media_module_search (path);
+	if (filename == (gchar *) -1)
+		return (MediaModule *) filename;
+	
 	if (filename != NULL) {
 		MediaModule *mmod;
 		
@@ -404,6 +407,8 @@ rf_module_media_load (gchar *path_in, gchar *file) {
 		
 		path = g_strdup_printf ("%s/%s", g_get_home_dir (), "/.rafesia/plugins/");
 		filename = rf_media_module_search (path);
+		if (filename == (gchar *) -1)
+			return (MediaModule *) filename;
 		if (filename != NULL) {
 			g_free (path);
 			return rf_module_media_load_from_file (filename);
@@ -413,6 +418,8 @@ rf_module_media_load (gchar *path_in, gchar *file) {
 
 		path = g_strdup ("/lib/rafesia/");
 		filename = rf_media_module_search (path);
+		if (filename == (gchar *) -1)
+			return (MediaModule *) filename;
 		if (filename != NULL) {
 			g_free (path);
 			return rf_module_media_load_from_file (filename);
@@ -421,6 +428,8 @@ rf_module_media_load (gchar *path_in, gchar *file) {
 		
 		path = g_strdup ("/usr/lib/rafesia/");
 		filename = rf_media_module_search (path);
+		if (filename == (gchar *) -1)
+			return (MediaModule *) filename;
 		if (filename != NULL) {
 			g_free (path);
 			return rf_module_media_load_from_file (filename);
@@ -429,6 +438,8 @@ rf_module_media_load (gchar *path_in, gchar *file) {
 		
 		path = g_strdup ("/usr/local/lib/rafesia/");
 		//filename = rf_media_module_search (path);
+		if (filename == (gchar *) -1)
+			return (MediaModule *) filename;
 		if (filename != NULL) {
 			g_free (path);
 			return rf_module_media_load_from_file (filename);

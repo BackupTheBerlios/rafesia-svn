@@ -477,7 +477,7 @@ rf_media_mplayer_realize (GtkWidget *widget) {
 	widget->style                = gtk_style_attach (widget->style, widget->window);
 	
 	//gdk_window_add_filter (GDK_WINDOW (this->mp_window), mp_window_filter, this);
-	//gdk_event_handler_set (mp_cb, this, NULL);
+	gdk_event_handler_set (mp_cb, this, NULL);
 	gdk_window_set_user_data (this->mp_window, widget);
 	
 	GTK_WIDGET_SET_FLAGS (widget, GTK_REALIZED);
