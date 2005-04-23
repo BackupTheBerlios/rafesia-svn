@@ -98,7 +98,7 @@ rf_interface_set_time_label (gint pos_time, gint length_time) {
 	
 	GtkWidget         *widget = rf_widget_get ("rf time label");
 	gchar             *curtime_str, *length_str;
-	gchar              time_str[256];
+	gchar             *time_str;
 	gint               cur_time, length;
 	
 	if ( widget == NULL )
@@ -110,9 +110,13 @@ rf_interface_set_time_label (gint pos_time, gint length_time) {
 	curtime_str = int_to_timestring (cur_time, 256);
 	length_str  = int_to_timestring (length, 256);
 	
-	snprintf (time_str, 256, "%s / %s", curtime_str, length_str);
+	time_str = g_strdup_printf ("%s / %s", curtime_str, length_str);
 	gtk_label_set_text (GTK_LABEL (widget), time_str);
-
+	
+	g_free (curtime_str);
+	g_free (length_str);
+	g_free (time_str);
+	
 }
 
 gboolean
